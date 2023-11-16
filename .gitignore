@@ -1,0 +1,2 @@
+# Exclude build files
+src/app/build/Linux_Distribution
