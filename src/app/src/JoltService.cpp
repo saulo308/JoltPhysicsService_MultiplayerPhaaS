@@ -12,6 +12,23 @@ int main(int argc, char** argv)
         return 0;
     }
     
+    // Check if there are additional command arguments
+    if(argc > 1)
+    {
+        // Get the first command arg
+        const auto firstCommandArg = argv[1];
+
+        // Check if command is "nosocket"
+        if(strcmp(firstCommandArg, "nosocket") == 0)
+        {
+            // If it is, just run a debug simulation, instead of opening a
+            // socket
+            PhysicsServiceServer->RunDebugSimulation();
+
+            return 0;
+        }
+    }
+
     // Open server socket to listen for client's (game) connection
     const bool bWasSocketConnectionSuccess = 
         PhysicsServiceServer->OpenServerSocket();

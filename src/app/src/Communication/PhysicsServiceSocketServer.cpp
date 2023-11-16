@@ -6,6 +6,30 @@
 
 namespace fs = std::filesystem;
 
+void PhysicsServiceSocketServer::RunDebugSimulation()
+{
+    // Creating a new physics service implementation
+    PhysicsServiceImplementation = new PhysicsServiceImpl();
+
+    // Initializing physics system with two objects
+    const std::string test = "Init\n1;0;0;0;0;0;0\n2;0;0;0;0;0;0\n";
+    InitializePhysicsSystem(test);
+
+    std::cout << "Steping physics...\n";
+
+    // Execute 10 physics steps
+    int step = 0;
+    for(int i = 0; i < 10; i++)
+    {
+        // Step physics simulation and get result
+        std::string stepSimulationResult = StepPhysicsSimulation();
+
+        // Print result
+        std::cout << "Step(" << step++ << "): \n" 
+            << stepSimulationResult << '\n';
+    }
+}
+
 bool PhysicsServiceSocketServer::OpenServerSocket()
 {
     // Get this server (local) addrinfo

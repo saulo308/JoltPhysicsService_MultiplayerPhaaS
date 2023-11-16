@@ -4,7 +4,7 @@ void PhysicsServiceImpl::InitPhysicsSystem
 	(const std::string initializationActorsInfo)
 {
     std::cout << "Initializing physics system...\n";
-    //std::cout << initializationActorsInfo << "\n";
+    std::cout << "InitializationInfo:\n" << initializationActorsInfo << "\n";
 
 	if(bIsInitialized)
 	{
@@ -162,7 +162,7 @@ void PhysicsServiceImpl::InitPhysicsSystem
 
 	// for each line (begin from 1 as first is only "Init"), create a box
 	// boddy with it's ID
-	for(int i = 1;i < initializationActorsInfoLines.size() - 1; i++)
+	for(int i = 1; i <= initializationActorsInfoLines.size() - 1; i++)
 	{
 		// Split info with ";" delimiter
 		std::stringstream actorInfoStringStream
@@ -225,7 +225,7 @@ void PhysicsServiceImpl::InitPhysicsSystem
 
 	bIsInitialized = true;
 
-    std::cout << "Physics system is up and running.\n";
+    std::cout << "Physics world has been initialized and is running.\n\n";
 }
 
 std::string PhysicsServiceImpl::StepPhysicsSimulation()
@@ -281,7 +281,7 @@ std::string PhysicsServiceImpl::StepPhysicsSimulation()
 
 void PhysicsServiceImpl::ClearPhysicsSystem()
 {
-    std::cout << "Cleaing physics system...\n";
+    std::cout << "Cleaning physics system...\n";
 
 	for(auto& bodyId : BodyIdList)
 	{

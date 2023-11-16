@@ -20,6 +20,11 @@ public:
     /** 
     * 
     */
+    void RunDebugSimulation();
+
+    /** 
+    * 
+    */
     bool OpenServerSocket();
 
 private:
