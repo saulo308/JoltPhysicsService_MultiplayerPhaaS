@@ -87,6 +87,8 @@ bool PhysicsServiceSocketServer::OpenServerSocket()
     ssize_t messageReceivalReturnValue = 0;
     do 
     {
+        std::cout << "Awaiting client message...\n";
+
         // Will stall this process thread until receives a new message from 
         // client.
         // The message will be passed on the buffer and the amount of received 
@@ -116,7 +118,7 @@ bool PhysicsServiceSocketServer::OpenServerSocket()
                 InitializePhysicsSystem(decodedMessage);
 
                 // Send client the confirmation
-                SendMessageToClient(clientSocket, "OK");
+                SendMessageToClient(clientSocket, "MessageEnd");
                 decodedMessage = "";
                 continue;
             }
@@ -129,7 +131,7 @@ bool PhysicsServiceSocketServer::OpenServerSocket()
 
                 // Step the physics world and get result
                 std::string stepSimulationResult = StepPhysicsSimulation();
-                stepSimulationResult += "OK\n";
+                stepSimulationResult += "MessageEnd\n";
 
                 // Get post physics communication time
                 std::chrono::steady_clock::time_point postStepPhysicsTime = 
@@ -160,6 +162,7 @@ bool PhysicsServiceSocketServer::OpenServerSocket()
                 // Add new sphere body (the method will parse the string)
                 auto SphereBodyAddOperationResult = 
                     AddNewSphereBody(decodedMessage);
+                SphereBodyAddOperationResult += "MessageEnd\n";
 
                 // Send operation result to client
                 SendMessageToClient(clientSocket, 
@@ -309,7 +312,7 @@ bool PhysicsServiceSocketServer::SendMessageToClient(int clientSocket,
         return false;
     }
 
-    //printf("Bytes sent: %ld\n", sendReturnValue);
+    printf("Bytes sent: %ld\n", sendReturnValue);
     return true;
 }
 
@@ -351,6 +354,8 @@ std::string PhysicsServiceSocketServer::StepPhysicsSimulation()
 std::string PhysicsServiceSocketServer::AddNewSphereBody
     (const std::string decodedMessageWithNewBodyInfo)
 {
+    std::cout << "New sphere body addition requested. Processing...\n";
+
     if(!PhysicsServiceImplementation)
     {
         std::cout << "No physics service implementation valid to add new sphere body.\n";
@@ -404,6 +409,7 @@ std::string PhysicsServiceSocketServer::AddNewSphereBody
     PhysicsServiceImplementation->AddNewSphereToPhysicsWorld
         (newSphereBodyID, newSphereInitialPos);
 
+    std::cout << "New sphere body created sucesffuly.\n";
     return "New sphere body created sucesffuly.";
 }   
 
