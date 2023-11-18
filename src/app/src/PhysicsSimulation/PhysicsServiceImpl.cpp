@@ -6,6 +6,7 @@ void PhysicsServiceImpl::InitPhysicsSystem
     std::cout << "Initializing physics system...\n";
     std::cout << "InitializationInfo:\n" << initializationActorsInfo << "\n";
 
+	// If physics system is already initialized, clear the last initialization
 	if(bIsInitialized)
 	{
 		ClearPhysicsSystem();
@@ -72,6 +73,7 @@ void PhysicsServiceImpl::InitPhysicsSystem
 		cMaxContactConstraints, broad_phase_layer_interface, 
 		object_vs_broadphase_layer_filter, object_vs_object_layer_filter);
 
+	// Define the physics world settings
 	PhysicsSettings physicsSettingsData;
 	physicsSettingsData.mNumVelocitySteps = 10;
 	physicsSettingsData.mNumPositionSteps = 2;
@@ -91,8 +93,11 @@ void PhysicsServiceImpl::InitPhysicsSystem
 	physicsSettingsData.mAllowSleeping = true;
 	physicsSettingsData.mCheckActiveEdges = true;
 
+	// Set the new physics settings
 	physics_system->SetPhysicsSettings(physicsSettingsData);
 
+	// Define gravity to act on the z-axis 
+	// (so it is the same as Unreal's gravity)
 	Vec3Arg newGravity(0.f, 0.f, -980.f);
 	physics_system->SetGravity(newGravity);
 
@@ -101,7 +106,6 @@ void PhysicsServiceImpl::InitPhysicsSystem
 	// Note that this is called from a job so whatever you do here needs to be 
 	// thread safe.
 	// Registering one is entirely optional.
-	//MyBodyActivationListener body_activation_listener;
 	physics_system->SetBodyActivationListener(body_activation_listener);
 
 	// A contact listener gets notified when bodies (are about to) collide, 
@@ -109,7 +113,6 @@ void PhysicsServiceImpl::InitPhysicsSystem
 	// Note that this is called from a job so whatever you do here needs to 
 	// be thread safe.
 	// Registering one is entirely optional.
-	//contact_listener = new MyContactListener();
 	physics_system->SetContactListener(contact_listener);
 
 	// The main way to interact with the bodies in the physics system is 
@@ -141,9 +144,9 @@ void PhysicsServiceImpl::InitPhysicsSystem
 
 	// Create the actual rigid body
 	// Note that if we run out of bodies this can return nullptr
-	Body *floor = body_interface->CreateBody(floor_settings); 
-	floor_id = floor->GetID();
+	Body* floor = body_interface->CreateBody(floor_settings); 
 
+	// Set the floor's friction and add a small rotation on y-axis
     floor->SetFriction(1.0f);
 	floor->AddRotationStep(RVec3(0.f, -0.01f, 0.f));
 
@@ -160,8 +163,8 @@ void PhysicsServiceImpl::InitPhysicsSystem
         initializationActorsInfoLines.push_back(line);
     }
 
-	// for each line (begin from 1 as first is only "Init"), create a box
-	// boddy with it's ID
+	// for each line (begin from 1 as first is only "Init"), create a sphere
+	// body with it's ID
 	for(int i = 1; i <= initializationActorsInfoLines.size() - 1; i++)
 	{
 		// Split info with ";" delimiter
@@ -187,15 +190,15 @@ void PhysicsServiceImpl::InitPhysicsSystem
 		const double initialPosY = std::stod(actorInfoList[2]);
 		const double initialPosZ = std::stod(actorInfoList[3]);
 
-		// Create the settings for the body itself. Note that here you can 
-		// also set other properties like the restitution / friction.
-		Vec3Arg boxHalfSize(0.5f, 0.5f, 0.5f);
-		BodyCreationSettings box_settings(new SphereShape(50.f),
+		// Create the settings for the body itself
+		BodyCreationSettings sphere_settings(new SphereShape(50.f),
 			RVec3(initialPosX, initialPosY, initialPosZ), Quat::sIdentity(), 
 			EMotionType::Dynamic, Layers::MOVING);
-		box_settings.mRestitution = 1.f;
 
-		// Get the actor ID and create a BodyID
+		// Set the sphere's restitution 
+		sphere_settings.mRestitution = 1.f;
+
+		// Get the actor ID from the init info and set the sphere's BodyID
 		const int actorId = std::stoi(actorInfoList[0]);
 		const BodyID newActorBodyID(actorId);
 		BodyIdList.push_back(newActorBodyID);
@@ -203,14 +206,16 @@ void PhysicsServiceImpl::InitPhysicsSystem
 		// Create the actual rigid body
 		// Note that if we run out of bodies this can return nullptr
 		Body* newActorBody = body_interface->CreateBodyWithID(newActorBodyID,
-			box_settings);
+			sphere_settings);
+
+		// Check for errors
 		if(!newActorBody)
 		{
 			std::cout << "Fail in creation of body " << actorId << std::endl;
 			continue;
 		}
 
-		// Add it to the world
+		// Add the new sphere to the world
 		body_interface->AddBody(newActorBody->GetID(), EActivation::Activate);
 	}
 

@@ -68,10 +68,6 @@ bool PhysicsServiceSocketServer::OpenServerSocket()
     // Free addrinfo as we don't need it anymore
     freeaddrinfo(addrInfoResult);
 
-    /*PhysicsServiceImplementation = new PhysicsServiceImpl();
-    const std::string test = "Init\n1;0;0;0;0;0;0\n2;0;0;0;0;0;0\n";
-    InitializePhysicsSystem(test);*/
-
     // Await for the client connection on the listening socket
     int clientSocket = AwaitClientConnection(serverListenSocket);
     if (clientSocket == -1) 
@@ -330,9 +326,10 @@ void PhysicsServiceSocketServer::SaveStepPhysicsMeasureToFile()
 
     // Open the file in output mode
     std::ofstream file(fullPath);
-
+    
+    // Check if the file was opened successfully
     if (file.is_open()) 
-    { // Check if the file was opened successfully
+    { 
         // Write the string to the file
         file << CurrentPhysicsStepSimulationWithoutCommsTimeMeasure; 
         file.close(); // Close the file
