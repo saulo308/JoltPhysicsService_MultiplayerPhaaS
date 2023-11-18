@@ -12,7 +12,7 @@ void PhysicsServiceSocketServer::RunDebugSimulation()
     PhysicsServiceImplementation = new PhysicsServiceImpl();
 
     // Initializing physics system with two objects
-    const std::string test = "Init\n1;0;0;0;0;0;0\n2;0;0;0;0;0;0\n";
+    const std::string test = "Init\n1;0;0;0;0;0;0\n2;250;0;0;0;0;0\n";
     InitializePhysicsSystem(test);
 
     std::cout << "Steping physics...\n";

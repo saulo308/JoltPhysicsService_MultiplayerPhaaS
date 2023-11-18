@@ -28,12 +28,20 @@ JPH_SUPPRESS_WARNINGS
 // Logic and data behind the server's behavior.
 class PhysicsServiceImpl
 {
-
 public:
+    /** */
     void InitPhysicsSystem(const std::string initializationActorsInfo);
+
+    /** */
     std::string StepPhysicsSimulation();
 
+    /** */
     void ClearPhysicsSystem();
+
+private:
+    /** */
+    void AddNewSphereToPhysicsWorld(const RVec3 newBodyInitialPosition, 
+        const BodyID newBodyId);
 
 private:
     // Callback for traces, connect this to your own trace function if you 

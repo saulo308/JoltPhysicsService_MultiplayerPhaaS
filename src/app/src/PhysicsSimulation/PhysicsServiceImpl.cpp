@@ -190,33 +190,15 @@ void PhysicsServiceImpl::InitPhysicsSystem
 		const double initialPosY = std::stod(actorInfoList[2]);
 		const double initialPosZ = std::stod(actorInfoList[3]);
 
-		// Create the settings for the body itself
-		BodyCreationSettings sphere_settings(new SphereShape(50.f),
-			RVec3(initialPosX, initialPosY, initialPosZ), Quat::sIdentity(), 
-			EMotionType::Dynamic, Layers::MOVING);
+		const RVec3 sphereInitialPosisiton = RVec3(initialPosX, initialPosY,
+			initialPosZ);
 
-		// Set the sphere's restitution 
-		sphere_settings.mRestitution = 1.f;
-
-		// Get the actor ID from the init info and set the sphere's BodyID
+		// Get the actor ID from the init info and create the sphere's BodyID
 		const int actorId = std::stoi(actorInfoList[0]);
-		const BodyID newActorBodyID(actorId);
-		BodyIdList.push_back(newActorBodyID);
+		const BodyID sphereBodyId(actorId);
 
-		// Create the actual rigid body
-		// Note that if we run out of bodies this can return nullptr
-		Body* newActorBody = body_interface->CreateBodyWithID(newActorBodyID,
-			sphere_settings);
-
-		// Check for errors
-		if(!newActorBody)
-		{
-			std::cout << "Fail in creation of body " << actorId << std::endl;
-			continue;
-		}
-
-		// Add the new sphere to the world
-		body_interface->AddBody(newActorBody->GetID(), EActivation::Activate);
+		// Add new sphere to the physics world
+		AddNewSphereToPhysicsWorld(sphereInitialPosisiton, sphereBodyId);
 	}
 
 	// Optional step: Before starting the physics simulation you can optimize 
@@ -316,4 +298,35 @@ void PhysicsServiceImpl::ClearPhysicsSystem()
 	bIsInitialized = false;
 
     std::cout << "Physics system was cleared. Exiting process...\n";
+}
+
+void PhysicsServiceImpl::AddNewSphereToPhysicsWorld
+	(const RVec3 newBodyInitialPosition, const BodyID newBodyId)
+{
+	// Create the settings for the body itself
+	BodyCreationSettings sphere_settings(new SphereShape(50.f),
+		newBodyInitialPosition, Quat::sIdentity(), 
+		EMotionType::Dynamic, Layers::MOVING);
+
+	// Set the sphere's restitution 
+	sphere_settings.mRestitution = 1.f;
+
+	// Add the body's ID to the list of IDs
+	BodyIdList.push_back(newBodyId);
+
+	// Create the actual rigid body
+	// Note that if we run out of bodies this can return nullptr
+	Body* newSphereBody = body_interface->CreateBodyWithID(newBodyId,
+		sphere_settings);
+
+	// Check for errors
+	if(!newSphereBody)
+	{
+		std::cout << "Fail in creation of body with ID: " 
+		<< newBodyId.GetIndexAndSequenceNumber() << '\n';
+		return;
+	}
+
+	// Add the new sphere to the world
+	body_interface->AddBody(newSphereBody->GetID(), EActivation::Activate);
 }
