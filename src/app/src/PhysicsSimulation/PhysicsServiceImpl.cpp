@@ -165,7 +165,7 @@ void PhysicsServiceImpl::InitPhysicsSystem
 
 	// for each line (begin from 1 as first is only "Init"), create a sphere
 	// body with it's ID
-	for(int i = 1; i <= initializationActorsInfoLines.size() - 1; i++)
+	for(int i = 1; i < initializationActorsInfoLines.size() - 1; i++)
 	{
 		// Split info with ";" delimiter
 		std::stringstream actorInfoStringStream
@@ -198,7 +198,7 @@ void PhysicsServiceImpl::InitPhysicsSystem
 		const BodyID sphereBodyId(actorId);
 
 		// Add new sphere to the physics world
-		AddNewSphereToPhysicsWorld(sphereInitialPosisiton, sphereBodyId);
+		AddNewSphereToPhysicsWorld(sphereBodyId, sphereInitialPosisiton);
 	}
 
 	// Optional step: Before starting the physics simulation you can optimize 
@@ -262,8 +262,39 @@ std::string PhysicsServiceImpl::StepPhysicsSimulation()
 		stepPhysicsResponse += actorStepPhysicsRotationResult + "\n";
 	}
 
-	//std::cout << "StepPhysics response:\n" << stepPhysicsResponse << "\n";
+	std::cout << "StepPhysics response:\n" << stepPhysicsResponse << "\n";
 	return stepPhysicsResponse;
+}
+
+void PhysicsServiceImpl::AddNewSphereToPhysicsWorld
+	(const BodyID newBodyId, const RVec3 newBodyInitialPosition)
+{
+	// Create the settings for the body itself
+	BodyCreationSettings sphere_settings(new SphereShape(50.f),
+		newBodyInitialPosition, Quat::sIdentity(), 
+		EMotionType::Dynamic, Layers::MOVING);
+
+	// Set the sphere's restitution 
+	sphere_settings.mRestitution = 1.f;
+
+	// Add the body's ID to the list of IDs
+	BodyIdList.push_back(newBodyId);
+
+	// Create the actual rigid body
+	// Note that if we run out of bodies this can return nullptr
+	Body* newSphereBody = body_interface->CreateBodyWithID(newBodyId,
+		sphere_settings);
+
+	// Check for errors
+	if(!newSphereBody)
+	{
+		std::cout << "Fail in creation of body with ID: " 
+		<< newBodyId.GetIndexAndSequenceNumber() << '\n';
+		return;
+	}
+
+	// Add the new sphere to the world
+	body_interface->AddBody(newSphereBody->GetID(), EActivation::Activate);
 }
 
 void PhysicsServiceImpl::ClearPhysicsSystem()
@@ -298,35 +329,4 @@ void PhysicsServiceImpl::ClearPhysicsSystem()
 	bIsInitialized = false;
 
     std::cout << "Physics system was cleared. Exiting process...\n";
-}
-
-void PhysicsServiceImpl::AddNewSphereToPhysicsWorld
-	(const RVec3 newBodyInitialPosition, const BodyID newBodyId)
-{
-	// Create the settings for the body itself
-	BodyCreationSettings sphere_settings(new SphereShape(50.f),
-		newBodyInitialPosition, Quat::sIdentity(), 
-		EMotionType::Dynamic, Layers::MOVING);
-
-	// Set the sphere's restitution 
-	sphere_settings.mRestitution = 1.f;
-
-	// Add the body's ID to the list of IDs
-	BodyIdList.push_back(newBodyId);
-
-	// Create the actual rigid body
-	// Note that if we run out of bodies this can return nullptr
-	Body* newSphereBody = body_interface->CreateBodyWithID(newBodyId,
-		sphere_settings);
-
-	// Check for errors
-	if(!newSphereBody)
-	{
-		std::cout << "Fail in creation of body with ID: " 
-		<< newBodyId.GetIndexAndSequenceNumber() << '\n';
-		return;
-	}
-
-	// Add the new sphere to the world
-	body_interface->AddBody(newSphereBody->GetID(), EActivation::Activate);
 }

@@ -38,10 +38,9 @@ public:
     /** */
     void ClearPhysicsSystem();
 
-private:
     /** */
-    void AddNewSphereToPhysicsWorld(const RVec3 newBodyInitialPosition, 
-        const BodyID newBodyId);
+    void AddNewSphereToPhysicsWorld(const BodyID newBodyId, 
+        const RVec3 newBodyInitialPosition);
 
 private:
     // Callback for traces, connect this to your own trace function if you 

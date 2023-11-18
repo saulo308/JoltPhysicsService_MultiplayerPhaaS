@@ -12,7 +12,7 @@ void PhysicsServiceSocketServer::RunDebugSimulation()
     PhysicsServiceImplementation = new PhysicsServiceImpl();
 
     // Initializing physics system with two objects
-    const std::string test = "Init\n1;0;0;0;0;0;0\n2;250;0;0;0;0;0\n";
+    const std::string test = "Init\n1;0;0;250;0;0;0\n2;250;0;250;0;0;0\nEndMessage\n";
     InitializePhysicsSystem(test);
 
     std::cout << "Steping physics...\n";
@@ -112,7 +112,10 @@ bool PhysicsServiceSocketServer::OpenServerSocket()
             if((decodedMessage.find("Init") != std::string::npos) 
                 && (decodedMessage.find("EndMessage") != std::string::npos))
             {
+                // Initialize the physics system
                 InitializePhysicsSystem(decodedMessage);
+
+                // Send client the confirmation
                 SendMessageToClient(clientSocket, "OK");
                 decodedMessage = "";
                 continue;
@@ -124,6 +127,7 @@ bool PhysicsServiceSocketServer::OpenServerSocket()
                 std::chrono::steady_clock::time_point preStepPhysicsTime = 
                     std::chrono::steady_clock::now();
 
+                // Step the physics world and get result
                 std::string stepSimulationResult = StepPhysicsSimulation();
                 stepSimulationResult += "OK\n";
 
@@ -142,13 +146,32 @@ bool PhysicsServiceSocketServer::OpenServerSocket()
                 CurrentPhysicsStepSimulationWithoutCommsTimeMeasure 
                     += elapsedTime + "\n";
 
+                // Send step physics result to client
                 SendMessageToClient(clientSocket, 
                     stepSimulationResult.c_str());
                 decodedMessage = "";
+
                 continue;
             }
-            //std::cout << "Unknown message: " << decodedMessage << std::endl;
-            //SendMessageToClient(clientSocket, "Unkown message error");
+
+            // Check if we should add a new sphere body
+            if(decodedMessage.find("AddSphereBody") != std::string::npos)
+            {
+                // Add new sphere body (the method will parse the string)
+                auto SphereBodyAddOperationResult = 
+                    AddNewSphereBody(decodedMessage);
+
+                // Send operation result to client
+                SendMessageToClient(clientSocket, 
+                    SphereBodyAddOperationResult.c_str());
+
+                // Clear received message
+                decodedMessage = "";
+                continue;
+            }
+
+            std::cout << "Unknown message: " << decodedMessage << std::endl;
+            SendMessageToClient(clientSocket, "Unkown message error");
         }
     } while (messageReceivalReturnValue > 0);
 
@@ -302,6 +325,11 @@ void PhysicsServiceSocketServer::InitializePhysicsSystem
     PhysicsServiceImplementation->InitPhysicsSystem(initializationActorsInfo);
 }
 
+/** 
+* Message template:
+*
+* "Step"
+*/
 std::string PhysicsServiceSocketServer::StepPhysicsSimulation()
 {
     if(!PhysicsServiceImplementation)
@@ -312,6 +340,72 @@ std::string PhysicsServiceSocketServer::StepPhysicsSimulation()
 
     return PhysicsServiceImplementation->StepPhysicsSimulation();
 }
+
+/** 
+* Message template:
+*
+* "AddSphereBody\n
+* id; posX; posY; posZ; rotX; rotY; rotZ"
+*
+*/
+std::string PhysicsServiceSocketServer::AddNewSphereBody
+    (const std::string decodedMessageWithNewBodyInfo)
+{
+    if(!PhysicsServiceImplementation)
+    {
+        std::cout << "No physics service implementation valid to add new sphere body.\n";
+        return "Error: Could not create sphere as physics service implementation is null.";
+    }
+
+    // Split decoded message into lines
+	std::stringstream decodedMessageStringStream
+        (decodedMessageWithNewBodyInfo);
+    std::vector<std::string> newBodyDataLines;
+
+	std::string line;
+    while (std::getline(decodedMessageStringStream, line)) 
+	{
+        newBodyDataLines.push_back(line);
+    }
+
+    // Check if line has the right amount of lines
+    if(newBodyDataLines.size() != 2)
+    {
+        std::cout << "New sphere creation decoded message does not have the right amount of data.\n";
+        return "Error: Could not create sphere as decoded message does not contain the right amount of data.";
+    }
+
+    // Get the second line as it contain the new sphere's creation data
+    // ("id; posX; posY; posZ; rotX; rotY; rotZ")
+    const std::string newSphereBodyData = newBodyDataLines[1];
+
+	// Split info with ";" delimiter
+	std::stringstream newSphereBodyDataStream(newSphereBodyData);
+	std::vector<std::string> newSphereBodyParsedData;
+
+	while (std::getline(newSphereBodyDataStream, line, ';')) 
+	{
+		newSphereBodyParsedData.push_back(line);
+	}
+
+    // Get the new sphere body's ID
+	const int newSphereId = std::stoi(newSphereBodyParsedData[0]);
+
+    // Get the new sphere body's position
+	const double initialPosX = std::stod(newSphereBodyParsedData[1]);
+	const double initialPosY = std::stod(newSphereBodyParsedData[2]);
+	const double initialPosZ = std::stod(newSphereBodyParsedData[3]);
+
+    // Create data for sphere creation
+    const BodyID newSphereBodyID(newSphereId);
+    const RVec3 newSphereInitialPos(initialPosX, initialPosY, initialPosZ);
+
+    // Request the creation of sphere
+    PhysicsServiceImplementation->AddNewSphereToPhysicsWorld
+        (newSphereBodyID, newSphereInitialPos);
+
+    return "New sphere body created sucesffuly.";
+}   
 
 void PhysicsServiceSocketServer::SaveStepPhysicsMeasureToFile()
 {

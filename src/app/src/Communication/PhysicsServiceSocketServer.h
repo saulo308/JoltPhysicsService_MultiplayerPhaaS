@@ -59,7 +59,11 @@ private:
 
 public:
     void InitializePhysicsSystem(const std::string initializationActorsInfo);
+
     std::string StepPhysicsSimulation();
+
+    std::string AddNewSphereBody
+        (const std::string decodedMessageWithNewBodyInfo);
 
 private:
     PhysicsServiceImpl* PhysicsServiceImplementation = nullptr;
