@@ -30,7 +30,7 @@ void PhysicsServiceSocketServer::RunDebugSimulation()
     }
 }
 
-bool PhysicsServiceSocketServer::OpenServerSocket()
+bool PhysicsServiceSocketServer::OpenServerSocket(const char* serverPort)
 {
     // Get this server (local) addrinfo
     // This will get the server addr as localhost
@@ -41,7 +41,7 @@ bool PhysicsServiceSocketServer::OpenServerSocket()
     hints.ai_flags = AI_PASSIVE;
 
     // Resolve the server address and port
-    int getAddrInfoReturnValue = getaddrinfo(NULL, SERVER_PORT, &hints,
+    int getAddrInfoReturnValue = getaddrinfo(NULL, serverPort, &hints,
         &addrInfoResult);
     if (getAddrInfoReturnValue != 0)
     {
@@ -312,6 +312,7 @@ bool PhysicsServiceSocketServer::SendMessageToClient(int clientSocket,
         return false;
     }
 
+    printf("Message sent: %s\n", messageBuffer);
     printf("Bytes sent: %ld\n", sendReturnValue);
     return true;
 }

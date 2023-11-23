@@ -27,19 +27,24 @@ int main(int argc, char** argv)
 
             return 0;
         }
-    }
 
-    // Open server socket to listen for client's (game) connection
-    const bool bWasSocketConnectionSuccess = 
-        PhysicsServiceServer->OpenServerSocket();
+        // Else, the first command should be the server port
+        // Open server socket to listen for client's (game) connection
+        const bool bWasSocketConnectionSuccess = 
+            PhysicsServiceServer->OpenServerSocket(firstCommandArg);
 
-    // Check for errors
-    if(!bWasSocketConnectionSuccess)
-    {
-        printf("Could not open socket connection. Check logs.\n");
+        // Check for errors
+        if(!bWasSocketConnectionSuccess)
+        {
+            printf("Could not open socket connection. Check logs.\n");
+            return 0;
+        }
+
         return 0;
     }
 
+    std::cout 
+        << "The command should have at least one argument. Either the server's port or \"nosocket\"";
 
     return 0;
 }

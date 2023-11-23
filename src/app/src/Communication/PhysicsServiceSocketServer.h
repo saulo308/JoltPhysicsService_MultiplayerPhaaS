@@ -9,7 +9,7 @@
 #include "../PhysicsSimulation/PhysicsServiceImpl.h"
 
 #define DEFAULT_BUFLEN 1048576
-#define SERVER_PORT "27015"
+//#define SERVER_PORT "27015"
 
 /** 
 * 
@@ -25,7 +25,7 @@ public:
     /** 
     * 
     */
-    bool OpenServerSocket();
+    bool OpenServerSocket(const char* serverPort);
 
 private:
     /** 
