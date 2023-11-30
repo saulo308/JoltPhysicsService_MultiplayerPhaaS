@@ -2,6 +2,8 @@
 #define PHYSICSSERVICEIMPL_H
 
 #include <iostream>
+#include <algorithm>
+#include <vector>
 
 #include "BPLayerInterfaceImpl.h"
 #include "MyBodyActivationListener.h"
@@ -39,8 +41,11 @@ public:
     void ClearPhysicsSystem();
 
     /** */
-    void AddNewSphereToPhysicsWorld(const BodyID newBodyId, 
+    std::string AddNewSphereToPhysicsWorld(const BodyID newBodyId, 
         const RVec3 newBodyInitialPosition);
+    
+    /** */
+    std::string RemoveBodyByID(const BodyID bodyToRemoveID);
 
 private:
     // Callback for traces, connect this to your own trace function if you 

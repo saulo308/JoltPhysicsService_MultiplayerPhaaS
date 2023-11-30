@@ -12,7 +12,7 @@ void PhysicsServiceSocketServer::RunDebugSimulation()
     PhysicsServiceImplementation = new PhysicsServiceImpl();
 
     // Initializing physics system with two objects
-    const std::string test = "Init\n1;0;0;250;0;0;0\n2;250;0;250;0;0;0\nEndMessage\n";
+    const std::string test = "Init\n0;0;0;250;0;0;0\n1;250;0;250;0;0;0\nEndMessage\n";
     InitializePhysicsSystem(test);
 
     std::cout << "Steping physics...\n";
@@ -167,6 +167,23 @@ bool PhysicsServiceSocketServer::OpenServerSocket(const char* serverPort)
                 // Send operation result to client
                 SendMessageToClient(clientSocket, 
                     SphereBodyAddOperationResult.c_str());
+
+                // Clear received message
+                decodedMessage = "";
+                continue;
+            }
+
+            // Check if we should remove a body
+            if(decodedMessage.find("RemoveBody") != std::string::npos)
+            {
+                // Remove the body (the method will parse the string)
+                auto BodyRemovalOperationResult = 
+                    RemoveBody(decodedMessage);
+                BodyRemovalOperationResult += "MessageEnd\n";
+
+                // Send operation result to client
+                SendMessageToClient(clientSocket, 
+                    BodyRemovalOperationResult.c_str());
 
                 // Clear received message
                 decodedMessage = "";
@@ -407,12 +424,66 @@ std::string PhysicsServiceSocketServer::AddNewSphereBody
     const RVec3 newSphereInitialPos(initialPosX, initialPosY, initialPosZ);
 
     // Request the creation of sphere
-    PhysicsServiceImplementation->AddNewSphereToPhysicsWorld
+    std::string additionReturn = 
+        PhysicsServiceImplementation->AddNewSphereToPhysicsWorld
         (newSphereBodyID, newSphereInitialPos);
 
-    std::cout << "New sphere body created sucesffuly.\n";
-    return "New sphere body created sucesffuly.";
+    std::cout << additionReturn;
+    return additionReturn;
 }   
+
+/** 
+* Message template:
+*
+* "RemoveBody\n
+* id"
+*/
+std::string PhysicsServiceSocketServer::RemoveBody
+    (const std::string decodedMessageWithRemoveBodyInfo)
+{
+    std::cout << "Remove body requested. Processing...\n";
+
+    if(!PhysicsServiceImplementation)
+    {
+        std::cout << "No physics service implementation valid to remove body.\n";
+        return "Error: Could not remove body as physics service implementation is null.";
+    }
+
+    // Split decoded message into lines
+	std::stringstream decodedMessageStringStream
+        (decodedMessageWithRemoveBodyInfo);
+    std::vector<std::string> newBodyDataLines;
+
+	std::string line;
+    while (std::getline(decodedMessageStringStream, line)) 
+	{
+        newBodyDataLines.push_back(line);
+    }
+
+    // Check if line has the right amount of lines
+    if(newBodyDataLines.size() != 2)
+    {
+        std::cout << "Remove body decoded message does not have the right amount of data.\n";
+        return "Error: Could not remove body as decoded message does not contain the right amount of data.";
+    }
+
+    // Get the second line as it contain the new sphere's creation data
+    // ("id")
+    const std::string bodyToRemoveData = newBodyDataLines[1];
+
+    // Get the requested body's ID for removal
+	const int bodyIdToRemoveAsInt = std::stoi(bodyToRemoveData);
+
+    // Convert the id into BodyId
+    const BodyID bodyIdToRemove(bodyIdToRemoveAsInt);
+
+    // Request the creation of sphere
+    std::string removalReturn = 
+        PhysicsServiceImplementation->RemoveBodyByID(bodyIdToRemove);
+
+    std::cout << removalReturn;
+    return removalReturn;
+}
 
 void PhysicsServiceSocketServer::SaveStepPhysicsMeasureToFile()
 {

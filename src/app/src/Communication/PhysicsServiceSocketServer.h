@@ -55,6 +55,7 @@ private:
     */
     bool SendMessageToClient(int clientSocket, const char* messageBuffer);
 
+    /** **/
     void SaveStepPhysicsMeasureToFile();
 
 public:
@@ -64,6 +65,9 @@ public:
 
     std::string AddNewSphereBody
         (const std::string decodedMessageWithNewBodyInfo);
+
+    std::string RemoveBody
+        (const std::string decodedMessageWithRemoveBodyInfo);
 
 private:
     PhysicsServiceImpl* PhysicsServiceImplementation = nullptr;

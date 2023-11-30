@@ -28,6 +28,8 @@ int main(int argc, char** argv)
             return 0;
         }
 
+        std::cout << "Opening physics service...\n";
+
         // Else, the first command should be the server port
         // Open server socket to listen for client's (game) connection
         const bool bWasSocketConnectionSuccess = 

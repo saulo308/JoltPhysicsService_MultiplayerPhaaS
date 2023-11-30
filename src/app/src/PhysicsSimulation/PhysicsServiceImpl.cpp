@@ -144,7 +144,8 @@ void PhysicsServiceImpl::InitPhysicsSystem
 
 	// Create the actual rigid body
 	// Note that if we run out of bodies this can return nullptr
-	Body* floor = body_interface->CreateBody(floor_settings); 
+	Body* floor = body_interface->CreateBodyWithID(BodyID(9998), 
+		floor_settings); 
 
 	// Set the floor's friction and add a small rotation on y-axis
     floor->SetFriction(1.0f);
@@ -152,6 +153,22 @@ void PhysicsServiceImpl::InitPhysicsSystem
 
 	// Add it to the world
 	body_interface->AddBody(floor->GetID(), EActivation::DontActivate);
+
+	// Create the second floor settings with new position
+	BodyCreationSettings floor_settings2(floor_shape,
+		RVec3(-2010.0_r, 0.0_r, 0.0_r), Quat::sIdentity(), EMotionType::Static, 
+		Layers::NON_MOVING);
+
+	// Create the second floor
+	Body* floor2 = body_interface->CreateBodyWithID(BodyID(9999), 
+		floor_settings2); 
+
+	// Set the floor's friction, add a small rotation on y-axis and translate 
+    floor2->SetFriction(1.0f);
+	floor2->AddRotationStep(RVec3(0.f, -0.01f, 0.f));
+
+	// Add it to the world
+	body_interface->AddBody(floor2->GetID(), EActivation::DontActivate);
 
 	// Split actors info from initialization into lines
 	std::stringstream initializationStringStream(initializationActorsInfo);
@@ -266,9 +283,15 @@ std::string PhysicsServiceImpl::StepPhysicsSimulation()
 	return stepPhysicsResponse;
 }
 
-void PhysicsServiceImpl::AddNewSphereToPhysicsWorld
+std::string PhysicsServiceImpl::AddNewSphereToPhysicsWorld
 	(const BodyID newBodyId, const RVec3 newBodyInitialPosition)
 {
+	// Check if body interface is valid
+	if(!body_interface)
+	{
+		return "No body interface valid when adding new sphere to world.\n";
+	}
+
 	// Create the settings for the body itself
 	BodyCreationSettings sphere_settings(new SphereShape(50.f),
 		newBodyInitialPosition, Quat::sIdentity(), 
@@ -288,13 +311,31 @@ void PhysicsServiceImpl::AddNewSphereToPhysicsWorld
 	// Check for errors
 	if(!newSphereBody)
 	{
-		std::cout << "Fail in creation of body with ID: " 
-		<< newBodyId.GetIndexAndSequenceNumber() << '\n';
-		return;
+		std::string creationErrorString = "Fail in creation of body with ID: " 
+			+ std::to_string(newBodyId.GetIndexAndSequenceNumber()) + '\n';
+		return creationErrorString;
 	}
 
 	// Add the new sphere to the world
 	body_interface->AddBody(newSphereBody->GetID(), EActivation::Activate);
+	return "New sphere body created succesfully.\n";
+}
+
+std::string PhysicsServiceImpl::RemoveBodyByID(const BodyID bodyToRemoveID)
+{
+	// Check if body interface is valid
+	if(!body_interface)
+	{
+		return "No body interface valid when removing body by ID.";
+	}
+
+	// Remove the ID from the list
+	BodyIdList.erase(std::remove(BodyIdList.begin(), BodyIdList.end(), 
+		bodyToRemoveID), BodyIdList.end());
+
+	// Remove the body by its ID
+	body_interface->RemoveBody(bodyToRemoveID);
+	return "Body removal processed succesfully\n";
 }
 
 void PhysicsServiceImpl::ClearPhysicsSystem()
