@@ -156,7 +156,7 @@ void PhysicsServiceImpl::InitPhysicsSystem
 
 	// Create the second floor settings with new position
 	BodyCreationSettings floor_settings2(floor_shape,
-		RVec3(-2010.0_r, 0.0_r, 0.0_r), Quat::sIdentity(), EMotionType::Static, 
+		RVec3(0.0_r, 2010.0_r, 0.0_r), Quat::sIdentity(), EMotionType::Static, 
 		Layers::NON_MOVING);
 
 	// Create the second floor
@@ -315,6 +315,9 @@ std::string PhysicsServiceImpl::AddNewSphereToPhysicsWorld
 			+ std::to_string(newBodyId.GetIndexAndSequenceNumber()) + '\n';
 		return creationErrorString;
 	}
+
+	// Testing a small velocity on Y-axis
+	newSphereBody->SetLinearVelocity(Vec3Arg(0.f, 1000.f, 0.f));
 
 	// Add the new sphere to the world
 	body_interface->AddBody(newSphereBody->GetID(), EActivation::Activate);
