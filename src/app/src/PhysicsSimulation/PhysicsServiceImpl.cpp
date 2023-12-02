@@ -356,8 +356,8 @@ void PhysicsServiceImpl::ClearPhysicsSystem()
 	}
 
 	// Remove and destroy the floor
-	body_interface->RemoveBody(floor_id);
-	body_interface->DestroyBody(floor_id);
+	//body_interface->RemoveBody(floor_id);
+	//body_interface->DestroyBody(floor_id);
 
 	// Unregisters all types with the factory and cleans up the default 
 	// material
