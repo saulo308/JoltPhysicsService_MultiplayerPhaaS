@@ -247,6 +247,7 @@ std::string PhysicsServiceImpl::StepPhysicsSimulation()
 	// rate to update the physics system.
 	const float cDeltaTime = 1.0f / 60.f;
 
+
 	// Step the world
 	physics_system->Update(cDeltaTime, cCollisionSteps, cIntegrationSubSteps, 
 		temp_allocator, job_system);
@@ -277,6 +278,18 @@ std::string PhysicsServiceImpl::StepPhysicsSimulation()
 			+ std::to_string(rotation.GetZ());
 
 		stepPhysicsResponse += actorStepPhysicsRotationResult + "\n";
+
+		BodyLockWrite lockWrite(physics_system->GetBodyLockInterface(), 
+			bodyId);
+		if(lockWrite.Succeeded())
+		{
+			Body& body = lockWrite.GetBody();
+			if(bodyId.GetIndex() % 2 == 0)
+				body.SetLinearVelocity(Vec3(0.f, 1000.f, 0.f));
+			else
+				body.SetLinearVelocity(Vec3(0.f, -1000.f, 0.f));
+			lockWrite.ReleaseLock();
+		}
 	}
 
 	std::cout << "StepPhysics response:\n" << stepPhysicsResponse << "\n";
@@ -300,9 +313,6 @@ std::string PhysicsServiceImpl::AddNewSphereToPhysicsWorld
 	// Set the sphere's restitution 
 	sphere_settings.mRestitution = 1.f;
 
-	// Add the body's ID to the list of IDs
-	BodyIdList.push_back(newBodyId);
-
 	// Create the actual rigid body
 	// Note that if we run out of bodies this can return nullptr
 	Body* newSphereBody = body_interface->CreateBodyWithID(newBodyId,
@@ -316,6 +326,9 @@ std::string PhysicsServiceImpl::AddNewSphereToPhysicsWorld
 		return creationErrorString;
 	}
 
+	// Add the body's ID to the list of IDs
+	BodyIdList.push_back(newBodyId);
+
 	// Testing a small velocity on Y-axis
 	newSphereBody->SetLinearVelocity(Vec3Arg(0.f, 1000.f, 0.f));
 
@@ -326,6 +339,9 @@ std::string PhysicsServiceImpl::AddNewSphereToPhysicsWorld
 
 std::string PhysicsServiceImpl::RemoveBodyByID(const BodyID bodyToRemoveID)
 {
+	std::cout << "Remove body by ID requested for id: " 
+		+ std::to_string(bodyToRemoveID.GetIndex()) + "\n";
+
 	// Check if body interface is valid
 	if(!body_interface)
 	{
@@ -335,6 +351,8 @@ std::string PhysicsServiceImpl::RemoveBodyByID(const BodyID bodyToRemoveID)
 	// Remove the ID from the list
 	BodyIdList.erase(std::remove(BodyIdList.begin(), BodyIdList.end(), 
 		bodyToRemoveID), BodyIdList.end());
+
+	std::cout << "Removed from BodyIdList...\n";
 
 	// Remove the body by its ID
 	body_interface->RemoveBody(bodyToRemoveID);

@@ -477,6 +477,8 @@ std::string PhysicsServiceSocketServer::RemoveBody
     // Convert the id into BodyId
     const BodyID bodyIdToRemove(bodyIdToRemoveAsInt);
 
+    std::cout << "Requesting physics service to remove body...\n";
+
     // Request the creation of sphere
     std::string removalReturn = 
         PhysicsServiceImplementation->RemoveBodyByID(bodyIdToRemove);
