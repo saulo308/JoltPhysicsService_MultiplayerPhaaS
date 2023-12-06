@@ -11,15 +11,20 @@ void PhysicsServiceSocketServer::RunDebugSimulation()
     // Creating a new physics service implementation
     PhysicsServiceImplementation = new PhysicsServiceImpl();
 
-    // Initializing physics system with two objects
-    const std::string test = "Init\n0;0;0;250;0;0;0\n1;250;0;250;0;0;0\nEndMessage\n";
+    // Initializing physics system with two spheres and a floor 
+    const std::string test = 
+        "Init\n"
+        "floor;0;0;0;0\n"
+        "sphere;1;0;0;250\n"
+        "sphere;2;250;0;250\n"
+        "EndMessage\n";
     InitializePhysicsSystem(test);
 
     std::cout << "Steping physics...\n";
 
-    // Execute 10 physics steps
+    // Execute 30 physics steps
     int step = 0;
-    for(int i = 0; i < 10; i++)
+    for(int i = 0; i < 30; i++)
     {
         // Step physics simulation and get result
         std::string stepSimulationResult = StepPhysicsSimulation();

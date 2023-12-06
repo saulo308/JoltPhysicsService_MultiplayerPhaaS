@@ -42,9 +42,9 @@ public:
     * 
     * The param's template should be:
     * "Init\n
-    * Id_0; posX_0; posY_0; posZ_0\n
-    * Id_1; posX_1; posY_1; posZ_1\n
-    * Id_2; posX_2; posY_2; posZ_2\n
+    * bodyType; Id_0; posX_0; posY_0; posZ_0\n
+    * bodyType; Id_1; posX_1; posY_1; posZ_1\n
+    * bodyType; Id_2; posX_2; posY_2; posZ_2\n
     * ...
     * MessageEnd"
     */
@@ -68,6 +68,7 @@ public:
     /** 
     * Adds a new sphere to the physics world. This will add a Body to the 
     * current running physics system, given its BodyId and initial position.
+    * The sphere will be dynamic and movable.
     * 
     * @param newBodyId The BodyID of the sphere to add to the physics world
     * @param newBodyInitialPosition The sphere's initial position on the
@@ -77,6 +78,21 @@ public:
     * if the sphere could not be added succesfully
     */
     std::string AddNewSphereToPhysicsWorld(const BodyID newBodyId, 
+        const RVec3 newBodyInitialPosition);
+
+    /** 
+    * Adds a new floor to the physics world. This will add a Body to the 
+    * current running physics system, given its BodyId and initial position.
+    * This floor will be static and should not move.
+    * 
+    * @param newBodyId The BodyID of the floor to add to the physics world
+    * @param newBodyInitialPosition The floor's initial position on the
+    * physics world
+    * 
+    * @return The result of the floor's addition. May return a failure message
+    * if the floor could not be added succesfully
+    */
+    std::string AddNewFloorToPhysicsSystem(const BodyID newBodyId, 
         const RVec3 newBodyInitialPosition);
     
     /** 

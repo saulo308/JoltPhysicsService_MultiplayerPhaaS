@@ -121,6 +121,7 @@ void PhysicsServiceImpl::InitPhysicsSystem
 	// we're not planning to access bodies from multiple threads)
 	body_interface = &physics_system->GetBodyInterface();
 
+	/*
 	// Next we can create a rigid body to serve as the floor, we make a large 
 	// box
 	// Create the settings for the collision volume (the shape). 
@@ -169,6 +170,7 @@ void PhysicsServiceImpl::InitPhysicsSystem
 
 	// Add it to the world
 	body_interface->AddBody(floor2->GetID(), EActivation::DontActivate);
+	*/
 
 	// Split actors info from initialization into lines
 	std::stringstream initializationStringStream(initializationActorsInfo);
@@ -180,8 +182,9 @@ void PhysicsServiceImpl::InitPhysicsSystem
         initializationActorsInfoLines.push_back(line);
     }
 
-	// for each line (begin from 1 as first is only "Init"), create a sphere
-	// body with it's ID
+	// for each line (begin from "1" as first is only "Init" into "size() - 1"
+	// as the last is "EndMessage"), create a new body with according to the
+	// body's type, id and initial location
 	for(int i = 1; i < initializationActorsInfoLines.size() - 1; i++)
 	{
 		// Split info with ";" delimiter
@@ -196,26 +199,45 @@ void PhysicsServiceImpl::InitPhysicsSystem
 		}
 
 		// Check for errors
-		if(actorInfoList.size() < 4)
+		if(actorInfoList.size() < 5)
 		{
-			std::cout << "Error on parsing initialization actor info. Less than 4 params\n";
-			return;
+			std::cout 
+				<< "Error on parsing initialization actor info. Line with less than 4 params: " 
+				<< initializationActorsInfoLines[i]
+				<< "\n";
+			continue;
 		}
 
-		// Get actor initial pos
-		const double initialPosX = std::stod(actorInfoList[1]);
-		const double initialPosY = std::stod(actorInfoList[2]);
-		const double initialPosZ = std::stod(actorInfoList[3]);
+		// Get the actor's type to be creates
+		const std::string actorType = actorInfoList[0];
 
-		const RVec3 sphereInitialPosisiton = RVec3(initialPosX, initialPosY,
+		// Get the actor ID from the init info
+		const int actorId = std::stoi(actorInfoList[1]);
+		const BodyID newBodyID(actorId);
+
+		// Get actor initial pos
+		const double initialPosX = std::stod(actorInfoList[2]);
+		const double initialPosY = std::stod(actorInfoList[3]);
+		const double initialPosZ = std::stod(actorInfoList[4]);
+
+		const RVec3 bodyInitialPosition = RVec3(initialPosX, initialPosY,
 			initialPosZ);
 
-		// Get the actor ID from the init info and create the sphere's BodyID
-		const int actorId = std::stoi(actorInfoList[0]);
-		const BodyID sphereBodyId(actorId);
+		// Check if we should create a floor
+		if(actorType.find("floor") != std::string::npos)
+		{
+			// Add new floor to the physics world
+			AddNewFloorToPhysicsSystem(newBodyID, bodyInitialPosition);
+			continue;
+		}
 
-		// Add new sphere to the physics world
-		AddNewSphereToPhysicsWorld(sphereBodyId, sphereInitialPosisiton);
+		// Check if we should create a sphere
+		if(actorType.find("sphere") != std::string::npos)
+		{
+			// Add new sphere to the physics world
+			AddNewSphereToPhysicsWorld(newBodyID, bodyInitialPosition);
+			continue;
+		}
 	}
 
 	// Optional step: Before starting the physics simulation you can optimize 
@@ -279,6 +301,7 @@ std::string PhysicsServiceImpl::StepPhysicsSimulation()
 
 		stepPhysicsResponse += actorStepPhysicsRotationResult + "\n";
 
+		/*
 		BodyLockWrite lockWrite(physics_system->GetBodyLockInterface(), 
 			bodyId);
 		if(lockWrite.Succeeded())
@@ -289,7 +312,7 @@ std::string PhysicsServiceImpl::StepPhysicsSimulation()
 			else
 				body.SetLinearVelocity(Vec3(0.f, -1000.f, 0.f));
 			lockWrite.ReleaseLock();
-		}
+		}*/
 	}
 
 	std::cout << "StepPhysics response:\n" << stepPhysicsResponse << "\n";
@@ -335,6 +358,47 @@ std::string PhysicsServiceImpl::AddNewSphereToPhysicsWorld
 	// Add the new sphere to the world
 	body_interface->AddBody(newSphereBody->GetID(), EActivation::Activate);
 	return "New sphere body created succesfully.\n";
+}
+
+std::string PhysicsServiceImpl::AddNewFloorToPhysicsSystem
+	(const BodyID newBodyId, const RVec3 newBodyInitialPosition)
+{
+	// Create the settings for the collision volume (the shape)
+	BoxShapeSettings floor_shape_settings(Vec3(1000.0f, 1000.f, 100.0f));
+
+	// Create the shape
+	ShapeSettings::ShapeResult floor_shape_result = 
+		floor_shape_settings.Create();
+
+	// We don't expect an error here, but you can check floor_shape_result for 
+	// HasError() / GetError()
+	ShapeRefC floor_shape = floor_shape_result.Get(); 
+
+	// Create the settings for the body itself. Note that here you can also set 
+	// other properties like the restitution / friction.
+	BodyCreationSettings floor_settings(floor_shape, newBodyInitialPosition, 
+		Quat::sIdentity(), EMotionType::Static, Layers::NON_MOVING);
+
+	// Create the actual rigid body
+	// Note that if we run out of bodies this can return nullptr
+	Body* floor = body_interface->CreateBodyWithID(newBodyId, floor_settings); 
+
+	// Check if floor was created successfuly
+	if(!floor)
+	{
+		std::string creationErrorString = "Fail in creation of body with ID: " 
+			+ std::to_string(newBodyId.GetIndexAndSequenceNumber()) + '\n';
+		return creationErrorString;
+	}
+
+	// Set the floor's friction and add a small rotation on y-axis
+    floor->SetFriction(1.0f);
+	floor->AddRotationStep(RVec3(0.f, -0.01f, 0.f));
+
+	// Add it to the world
+	body_interface->AddBody(floor->GetID(), EActivation::DontActivate);
+
+	return "New floor body created succesfully.\n";
 }
 
 std::string PhysicsServiceImpl::RemoveBodyByID(const BodyID bodyToRemoveID)
