@@ -269,11 +269,6 @@ std::string PhysicsServiceImpl::StepPhysicsSimulation()
 	// rate to update the physics system.
 	const float cDeltaTime = 1.0f / 60.f;
 
-
-	// Step the world
-	physics_system->Update(cDeltaTime, cCollisionSteps, cIntegrationSubSteps, 
-		temp_allocator, job_system);
-
 	// response string
 	std::string stepPhysicsResponse = "";
 
@@ -301,21 +296,25 @@ std::string PhysicsServiceImpl::StepPhysicsSimulation()
 
 		stepPhysicsResponse += actorStepPhysicsRotationResult + "\n";
 
-		/*
 		BodyLockWrite lockWrite(physics_system->GetBodyLockInterface(), 
 			bodyId);
 		if(lockWrite.Succeeded())
 		{
 			Body& body = lockWrite.GetBody();
 			if(bodyId.GetIndex() % 2 == 0)
-				body.SetLinearVelocity(Vec3(0.f, 1000.f, 0.f));
+				body.SetLinearVelocity(Vec3(0.f, 300.f, 0.f));
 			else
-				body.SetLinearVelocity(Vec3(0.f, -1000.f, 0.f));
+				body.SetLinearVelocity(Vec3(0.f, -300.f, 0.f));
 			lockWrite.ReleaseLock();
-		}*/
+		}
 	}
 
-	std::cout << "StepPhysics response:\n" << stepPhysicsResponse << "\n";
+	// Step the world
+	physics_system->Update(cDeltaTime, cCollisionSteps, cIntegrationSubSteps, 
+		temp_allocator, job_system);
+
+	std::cout << "(Step:" << stepPhysicsCounter++ << ")" 
+		<< "StepPhysics response:\n" << stepPhysicsResponse << "\n";
 	return stepPhysicsResponse;
 }
 

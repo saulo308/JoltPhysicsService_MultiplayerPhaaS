@@ -183,8 +183,14 @@ public:
     */
     std::vector<BodyID> BodyIdList;
 
-    /** FLag that indicates if the physics system is initialized */
+    /** Flag that indicates if the physics system is initialized */
     bool bIsInitialized = false;
+
+    /** 
+    * The step physics counter. Will count the number of steps as it 
+    * increases at each step physics call.
+    */
+    std::uint32_t stepPhysicsCounter = 0;
 };
 
 #endif
