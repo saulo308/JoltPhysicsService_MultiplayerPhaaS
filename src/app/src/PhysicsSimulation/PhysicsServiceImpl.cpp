@@ -275,6 +275,25 @@ std::string PhysicsServiceImpl::StepPhysicsSimulation()
 	// Foreach body:
 	for(auto& bodyId : BodyIdList)
 	{
+		BodyLockWrite lockWrite(physics_system->GetBodyLockInterface(), 
+			bodyId);
+		if(lockWrite.Succeeded())
+		{
+			Body& body = lockWrite.GetBody();
+			if(bodyId.GetIndex() % 2 == 0)
+				body.SetLinearVelocity(Vec3(0.f, 300.f, 0.f));
+			else
+				body.SetLinearVelocity(Vec3(0.f, -300.f, 0.f));
+			lockWrite.ReleaseLock();
+		}
+	}
+
+	// Step the world
+	physics_system->Update(cDeltaTime, cCollisionSteps, cIntegrationSubSteps, 
+		temp_allocator, job_system);
+
+	for(auto& bodyId : BodyIdList)
+	{
 		// Output current position of the sphere
 		RVec3 position = body_interface->GetCenterOfMassPosition(bodyId);
 
@@ -295,23 +314,7 @@ std::string PhysicsServiceImpl::StepPhysicsSimulation()
 			+ std::to_string(rotation.GetZ());
 
 		stepPhysicsResponse += actorStepPhysicsRotationResult + "\n";
-
-		BodyLockWrite lockWrite(physics_system->GetBodyLockInterface(), 
-			bodyId);
-		if(lockWrite.Succeeded())
-		{
-			Body& body = lockWrite.GetBody();
-			if(bodyId.GetIndex() % 2 == 0)
-				body.SetLinearVelocity(Vec3(0.f, 300.f, 0.f));
-			else
-				body.SetLinearVelocity(Vec3(0.f, -300.f, 0.f));
-			lockWrite.ReleaseLock();
-		}
 	}
-
-	// Step the world
-	physics_system->Update(cDeltaTime, cCollisionSteps, cIntegrationSubSteps, 
-		temp_allocator, job_system);
 
 	std::cout << "(Step:" << stepPhysicsCounter++ << ")" 
 		<< "StepPhysics response:\n" << stepPhysicsResponse << "\n";
@@ -352,7 +355,7 @@ std::string PhysicsServiceImpl::AddNewSphereToPhysicsWorld
 	BodyIdList.push_back(newBodyId);
 
 	// Testing a small velocity on Y-axis
-	newSphereBody->SetLinearVelocity(Vec3Arg(0.f, 1000.f, 0.f));
+	//newSphereBody->SetLinearVelocity(Vec3Arg(0.f, 1000.f, 0.f));
 
 	// Add the new sphere to the world
 	body_interface->AddBody(newSphereBody->GetID(), EActivation::Activate);
