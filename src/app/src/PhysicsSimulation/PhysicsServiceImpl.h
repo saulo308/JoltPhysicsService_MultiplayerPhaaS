@@ -21,6 +21,7 @@
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Body/BodyActivationListener.h>
+#include <Jolt/Physics/StateRecorderImpl.h>
 
 // Disable common warnings triggered by Jolt, you can use 
 // JPH_SUPPRESS_WARNING_PUSH / JPH_SUPPRESS_WARNING_POP to store and restore 
@@ -139,6 +140,13 @@ private:
 
 #endif // JPH_ENABLE_ASSERTS
 
+private:
+	// Save state of simulation
+	void SaveState(StateRecorderImpl &inStream);
+
+	// Restore state of simulation
+	void RestoreState(StateRecorderImpl &inStream);
+
 public:
 	TempAllocator* temp_allocator = nullptr;
 	JobSystem* job_system = nullptr;
@@ -191,6 +199,10 @@ public:
     * increases at each step physics call.
     */
     std::uint32_t stepPhysicsCounter = 0;
+
+private:
+    /** */
+    Array<StateRecorderImpl> mPlaybackFrames;	
 };
 
 #endif

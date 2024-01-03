@@ -43,7 +43,7 @@ void PhysicsServiceImpl::InitPhysicsSystem
 	// system. If you try to add more you'll get an error.
 	// Note: This value is low because this is a simple test. For a real 
 	// project use something in the order of 65536.
-	const uint cMaxBodies = 65536;
+	const uint cMaxBodies = 128000;
 
 	// This determines how many mutexes to allocate to protect rigid bodies 
 	// from concurrent access. Set it to 0 for the default settings.
@@ -120,57 +120,6 @@ void PhysicsServiceImpl::InitPhysicsSystem
 	// variant of this. We're going to use the locking version (even though 
 	// we're not planning to access bodies from multiple threads)
 	body_interface = &physics_system->GetBodyInterface();
-
-	/*
-	// Next we can create a rigid body to serve as the floor, we make a large 
-	// box
-	// Create the settings for the collision volume (the shape). 
-	// Note that for simple shapes (like boxes) you can also directly construct 
-	// a BoxShape.
-	BoxShapeSettings floor_shape_settings(Vec3(1000.0f, 1000.f, 100.0f));
-
-	// Create the shape
-	ShapeSettings::ShapeResult floor_shape_result = 
-		floor_shape_settings.Create();
-
-	// We don't expect an error here, but you can check floor_shape_result for 
-	// HasError() / GetError()
-	ShapeRefC floor_shape = floor_shape_result.Get(); 
-
-	// Create the settings for the body itself. Note that here you can also set 
-	// other properties like the restitution / friction.
-	BodyCreationSettings floor_settings(floor_shape,
-		RVec3(0.0_r, 0.0_r, 0.0_r), Quat::sIdentity(), EMotionType::Static, 
-		Layers::NON_MOVING);
-
-	// Create the actual rigid body
-	// Note that if we run out of bodies this can return nullptr
-	Body* floor = body_interface->CreateBodyWithID(BodyID(9998), 
-		floor_settings); 
-
-	// Set the floor's friction and add a small rotation on y-axis
-    floor->SetFriction(1.0f);
-	floor->AddRotationStep(RVec3(0.f, -0.01f, 0.f));
-
-	// Add it to the world
-	body_interface->AddBody(floor->GetID(), EActivation::DontActivate);
-
-	// Create the second floor settings with new position
-	BodyCreationSettings floor_settings2(floor_shape,
-		RVec3(0.0_r, 2010.0_r, 0.0_r), Quat::sIdentity(), EMotionType::Static, 
-		Layers::NON_MOVING);
-
-	// Create the second floor
-	Body* floor2 = body_interface->CreateBodyWithID(BodyID(9999), 
-		floor_settings2); 
-
-	// Set the floor's friction, add a small rotation on y-axis and translate 
-    floor2->SetFriction(1.0f);
-	floor2->AddRotationStep(RVec3(0.f, -0.01f, 0.f));
-
-	// Add it to the world
-	body_interface->AddBody(floor2->GetID(), EActivation::DontActivate);
-	*/
 
 	// Split actors info from initialization into lines
 	std::stringstream initializationStringStream(initializationActorsInfo);
@@ -256,6 +205,12 @@ void PhysicsServiceImpl::InitPhysicsSystem
 
 std::string PhysicsServiceImpl::StepPhysicsSimulation()
 {
+	// Record the state prior to the step
+	//mPlaybackFrames.push_back(StateRecorderImpl());
+	//SaveState(mPlaybackFrames.back());
+
+	//std::cout << "Size: " << mPlaybackFrames.size() << '\n';
+
 	// If you take larger steps than 1 / 60th of a second you need to do 
 	// multiple collision steps in order to keep the simulation stable. 
 	// Do 1 collision step per 1 / 60th of a second (round up).
@@ -289,9 +244,14 @@ std::string PhysicsServiceImpl::StepPhysicsSimulation()
 	}
 
 	// Step the world
+	std::cout << "Stepping physics...\n";
 	physics_system->Update(cDeltaTime, cCollisionSteps, cIntegrationSubSteps, 
 		temp_allocator, job_system);
+	std::cout << "Physics stepping finished.\n";
 
+	//RestoreState(mPlaybackFrames.back());
+
+	// For each body on the physics system:
 	for(auto& bodyId : BodyIdList)
 	{
 		// Output current position of the sphere
@@ -324,9 +284,12 @@ std::string PhysicsServiceImpl::StepPhysicsSimulation()
 std::string PhysicsServiceImpl::AddNewSphereToPhysicsWorld
 	(const BodyID newBodyId, const RVec3 newBodyInitialPosition)
 {
+	std::cout << "NewSphere addition to physics world requested.\n";
+
 	// Check if body interface is valid
 	if(!body_interface)
 	{
+		std::cout << "No body interface valid when adding new sphere to world.\n";
 		return "No body interface valid when adding new sphere to world.\n";
 	}
 
@@ -348,6 +311,9 @@ std::string PhysicsServiceImpl::AddNewSphereToPhysicsWorld
 	{
 		std::string creationErrorString = "Fail in creation of body with ID: " 
 			+ std::to_string(newBodyId.GetIndexAndSequenceNumber()) + '\n';
+
+		std::cout << creationErrorString;
+
 		return creationErrorString;
 	}
 
@@ -356,6 +322,8 @@ std::string PhysicsServiceImpl::AddNewSphereToPhysicsWorld
 
 	// Testing a small velocity on Y-axis
 	//newSphereBody->SetLinearVelocity(Vec3Arg(0.f, 1000.f, 0.f));
+
+	std::cout << "New sphere body created and added to physics system succesfully.\n";
 
 	// Add the new sphere to the world
 	body_interface->AddBody(newSphereBody->GetID(), EActivation::Activate);
@@ -457,4 +425,31 @@ void PhysicsServiceImpl::ClearPhysicsSystem()
 	bIsInitialized = false;
 
     std::cout << "Physics system was cleared. Exiting process...\n";
+}
+
+void PhysicsServiceImpl::SaveState(StateRecorderImpl &inStream)
+{
+	//mTest->SaveState(inStream);
+
+	//if (contact_listener)
+		//contact_listener->SaveState(inStream);
+
+	physics_system->SaveState(inStream);
+}
+
+void PhysicsServiceImpl::RestoreState(StateRecorderImpl &inStream)
+{
+	inStream.Rewind();
+
+	// Restore the state of the test first, this is needed because the test can make changes to
+	// the state of bodies that is not tracked by the PhysicsSystem::SaveState.
+	// E.g. in the ChangeShapeTest the shape is restored here, which needs to be done first
+	// because changing the shape changes Body::mPosition when the center of mass changes.
+	//mTest->RestoreState(inStream);
+
+	//if (contact_listener)
+		//contact_listener->RestoreState(inStream);
+
+	if (!physics_system->RestoreState(inStream))
+		std::cout << "Failed to restore physics state\n";
 }

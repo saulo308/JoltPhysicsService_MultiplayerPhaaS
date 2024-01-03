@@ -4,7 +4,7 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${HOME}/**"
+                "/home/saulosoares/jolt_physics"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/clang",
