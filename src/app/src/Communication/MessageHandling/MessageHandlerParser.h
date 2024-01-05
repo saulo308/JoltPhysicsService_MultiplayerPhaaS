@@ -11,12 +11,15 @@ class MessageHandlerParser final
     using HandlerPtr = std::unique_ptr<MessageHandlerBase>;
 
 public:
-    void handleMessage(const std::string& message);
+    std::string handleMessage(const std::string& message);
 
     template <typename T>
-    void register_handler(const std::string& messageType) 
+    void register_handler(const std::string& messageType, 
+        class PhysicsServiceImpl* physicsServiceImplementation) 
     {
         messageHandlersMap[messageType] = std::make_unique<T>();
+        messageHandlersMap[messageType]->initializeMessageHandler
+            (physicsServiceImplementation);
     }
 
 private:

@@ -11,17 +11,32 @@ namespace fs = std::filesystem;
 void PhysicsServiceSocketServer::RunDebugSimulation()
 {
     // Creating a new physics service implementation
-    PhysicsServiceImplementation = new PhysicsServiceImpl();
+    physicsServiceImplementation = new PhysicsServiceImpl();
 
     // Initializing physics system with two spheres and a floor 
-    const std::string test = 
-        "Init\n"
+    const std::string initPhysicsSystemMessage = 
+        "Init;\n"
         "floor;0;0;0;0\n"
         "sphere;1;0;0;250\n"
         "sphere;2;250;0;250\n"
         "EndMessage\n";
-    InitializePhysicsSystem(test);
 
+    // Create the physics service message handler parser to parse and
+    // delegate incoming messages
+    physicsServiceMessageHandlerParser = new MessageHandlerParser();
+
+    // Register all handlers:
+
+    // Register InitPhysicsSystem handler (message type: "Init")
+    physicsServiceMessageHandlerParser->register_handler
+        <MessageHandler_InitPhysicsSystem>("Init", 
+        physicsServiceImplementation);
+
+    // Handle the init message
+    physicsServiceMessageHandlerParser->handleMessage(initPhysicsSystemMessage);
+
+    /*
+    InitializePhysicsSystem(test);
     std::cout << "Steping physics...\n";
 
     // Execute 30 physics steps
@@ -34,7 +49,7 @@ void PhysicsServiceSocketServer::RunDebugSimulation()
         // Print result
         std::cout << "Step(" << step++ << "): \n" 
             << stepSimulationResult << '\n';
-    }
+    }*/
 }
 
 bool PhysicsServiceSocketServer::OpenServerSocket(const char* serverPort)
@@ -87,12 +102,19 @@ bool PhysicsServiceSocketServer::OpenServerSocket(const char* serverPort)
     // client socket)
     close(serverListenSocket);
 
-    PhysicsServiceImplementation = new PhysicsServiceImpl();
-    CurrentPhysicsStepSimulationWithoutCommsTimeMeasure = "";
+    physicsServiceImplementation = new PhysicsServiceImpl();
+    currentPhysicsStepSimulationWithoutCommsTimeMeasure = "";
 
-    CurrentMessageHandlerParser = new MessageHandlerParser();
-    CurrentMessageHandlerParser->register_handler
-        <MessageHandler_InitPhysicsSystem>("Init");
+    // Create the physics service message handler parser to parse and
+    // delegate incoming messages
+    physicsServiceMessageHandlerParser = new MessageHandlerParser();
+
+    // Register all handlers:
+
+    // Register InitPhysicsSystem handler (message type: "Init")
+    physicsServiceMessageHandlerParser->register_handler
+        <MessageHandler_InitPhysicsSystem>("Init", 
+        physicsServiceImplementation);
 
     // Receive until the peer shuts down the connection
     ssize_t messageReceivalReturnValue = 0;
@@ -121,6 +143,13 @@ bool PhysicsServiceSocketServer::OpenServerSocket(const char* serverPort)
             decodedMessage += std::string(receivingBuffer, receivingBuffer 
                 + messageReceivalReturnValue);
             std::cout << "Decoded message:" << decodedMessage << "\n=======\n";
+
+            // Handle the incoming decoded message
+            std::string messageHandlerReturn = 
+                physicsServiceMessageHandlerParser->handleMessage
+                (decodedMessage);
+
+            
 
             if((decodedMessage.find("Init") != std::string::npos) 
                 && (decodedMessage.find("EndMessage") != std::string::npos))
@@ -156,7 +185,7 @@ bool PhysicsServiceSocketServer::OpenServerSocket(const char* serverPort)
                 const std::string elapsedTime = ss.str();
 
                 // Append the delta time to the current step measurement
-                CurrentPhysicsStepSimulationWithoutCommsTimeMeasure 
+                currentPhysicsStepSimulationWithoutCommsTimeMeasure 
                     += elapsedTime + "\n";
 
                 // Send step physics result to client
@@ -348,13 +377,13 @@ bool PhysicsServiceSocketServer::SendMessageToClient(int clientSocket,
 void PhysicsServiceSocketServer::InitializePhysicsSystem
     (const std::string initializationActorsInfo)
 {
-    if(!PhysicsServiceImplementation)
+    if(!physicsServiceImplementation)
     {
         std::cout << "No physics service implementation valid to init physics system.\n";
         return;
     }
 
-    PhysicsServiceImplementation->InitPhysicsSystem(initializationActorsInfo);
+    physicsServiceImplementation->InitPhysicsSystem(initializationActorsInfo);
 }
 
 /** 
@@ -364,13 +393,13 @@ void PhysicsServiceSocketServer::InitializePhysicsSystem
 */
 std::string PhysicsServiceSocketServer::StepPhysicsSimulation()
 {
-    if(!PhysicsServiceImplementation)
+    if(!physicsServiceImplementation)
     {
         std::cout << "No physics service implementation valid to step physics simulation.\n";
         return "";
     }
 
-    return PhysicsServiceImplementation->StepPhysicsSimulation();
+    return physicsServiceImplementation->StepPhysicsSimulation();
 }
 
 /** 
@@ -385,7 +414,7 @@ std::string PhysicsServiceSocketServer::AddNewSphereBody
 {
     std::cout << "New sphere body addition requested. Processing...\n";
 
-    if(!PhysicsServiceImplementation)
+    if(!physicsServiceImplementation)
     {
         std::cout << "No physics service implementation valid to add new sphere body.\n";
         return "Error: Could not create sphere as physics service implementation is null.";
@@ -436,7 +465,7 @@ std::string PhysicsServiceSocketServer::AddNewSphereBody
 
     // Request the creation of sphere
     std::string additionReturn = 
-        PhysicsServiceImplementation->AddNewSphereToPhysicsWorld
+        physicsServiceImplementation->AddNewSphereToPhysicsWorld
         (newSphereBodyID, newSphereInitialPos);
 
     std::cout << additionReturn;
@@ -454,7 +483,7 @@ std::string PhysicsServiceSocketServer::RemoveBody
 {
     std::cout << "Remove body requested. Processing...\n";
 
-    if(!PhysicsServiceImplementation)
+    if(!physicsServiceImplementation)
     {
         std::cout << "No physics service implementation valid to remove body.\n";
         return "Error: Could not remove body as physics service implementation is null.";
@@ -492,7 +521,7 @@ std::string PhysicsServiceSocketServer::RemoveBody
 
     // Request the creation of sphere
     std::string removalReturn = 
-        PhysicsServiceImplementation->RemoveBodyByID(bodyIdToRemove);
+        physicsServiceImplementation->RemoveBodyByID(bodyIdToRemove);
 
     std::cout << removalReturn;
     return removalReturn;
@@ -516,7 +545,7 @@ void PhysicsServiceSocketServer::SaveStepPhysicsMeasureToFile()
     if (file.is_open()) 
     { 
         // Write the string to the file
-        file << CurrentPhysicsStepSimulationWithoutCommsTimeMeasure; 
+        file << currentPhysicsStepSimulationWithoutCommsTimeMeasure; 
         file.close(); // Close the file
         std::cout << "Data written to file successfully." << std::endl;
     } 

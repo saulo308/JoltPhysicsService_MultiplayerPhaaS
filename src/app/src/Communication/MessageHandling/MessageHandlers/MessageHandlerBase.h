@@ -10,8 +10,18 @@ public:
 
 public:
     /** */
-    virtual void handleMessage(const std::string& message) = 0;
+    void initializeMessageHandler
+        (class PhysicsServiceImpl* inPhysicsServiceImplementation)
+    {
+        physicsServiceImplementation = inPhysicsServiceImplementation;
+    }
 
+    /** */
+    virtual std::string handleMessage(const std::string& message) = 0;
+
+protected:
+    /** */
+    class PhysicsServiceImpl* physicsServiceImplementation = nullptr;
 };
 
 #endif

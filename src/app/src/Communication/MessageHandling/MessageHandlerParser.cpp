@@ -1,6 +1,6 @@
 #include "MessageHandlerParser.h"
 
-void MessageHandlerParser::handleMessage(const std::string& message)
+std::string MessageHandlerParser::handleMessage(const std::string& message)
 {
     // Extracting the handler type from the message
     const std::string handlerType = extractHandlerTypeFromMessage(message);
@@ -11,10 +11,11 @@ void MessageHandlerParser::handleMessage(const std::string& message)
     // If could find the handler, handle the message
     if(handlerPtr != messageHandlersMap.end())
     {
-        handlerPtr->second->handleMessage(message);
+        return handlerPtr->second->handleMessage(message);
     }
 
     // If not, call the unknown message method
+    return "Error: Message type could not be handled.\n";
 }
 
 std::string MessageHandlerParser::extractHandlerTypeFromMessage

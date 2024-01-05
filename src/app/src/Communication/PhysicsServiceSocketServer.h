@@ -172,15 +172,18 @@ private:
     * The physics system implementation. This implement the JoltPhysics that
     * will initialize and update a physics world for this server
     */
-    PhysicsServiceImpl* PhysicsServiceImplementation = nullptr;
+    PhysicsServiceImpl* physicsServiceImplementation = nullptr;
 
-    class MessageHandlerParser* CurrentMessageHandlerParser = nullptr;
+    /** 
+    *
+    */
+    class MessageHandlerParser* physicsServiceMessageHandlerParser = nullptr;
 
     /** 
     * The current physics step time measure without communication overhead.
     * Used to test the overall system
     */
-	std::string CurrentPhysicsStepSimulationWithoutCommsTimeMeasure = "";
+	std::string currentPhysicsStepSimulationWithoutCommsTimeMeasure = "";
 
     /** 
     * The current decoded message. This is the current message received from
