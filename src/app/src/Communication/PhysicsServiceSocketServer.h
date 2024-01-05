@@ -112,7 +112,7 @@ public:
     * to create on the physics system.
     * 
     * The message's template should be:
-    * "Init\n
+    * "Init;\n
     * Id_0; posX_0; posY_0; posZ_0\n
     * Id_1; posX_1; posY_1; posZ_1\n
     * Id_2; posX_2; posY_2; posZ_2\n
@@ -173,6 +173,8 @@ private:
     * will initialize and update a physics world for this server
     */
     PhysicsServiceImpl* PhysicsServiceImplementation = nullptr;
+
+    class MessageHandlerParser* CurrentMessageHandlerParser = nullptr;
 
     /** 
     * The current physics step time measure without communication overhead.

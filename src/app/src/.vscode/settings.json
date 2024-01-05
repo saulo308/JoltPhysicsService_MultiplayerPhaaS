@@ -63,4 +63,5 @@
         "stop_token": "cpp",
         "thread": "cpp"
     }
+    "[git-commit]": {"editor.rulers": [50]},
 }

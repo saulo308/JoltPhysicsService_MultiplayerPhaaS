@@ -1,4 +1,5 @@
 #include "PhysicsServiceImpl.h"
+#include "BodyRuntimeData.h"
 
 void PhysicsServiceImpl::InitPhysicsSystem
 	(const std::string initializationActorsInfo)
@@ -239,6 +240,11 @@ std::string PhysicsServiceImpl::StepPhysicsSimulation()
 				body.SetLinearVelocity(Vec3(0.f, 300.f, 0.f));
 			else
 				body.SetLinearVelocity(Vec3(0.f, -300.f, 0.f));
+
+			uint64_t bodyRuntimeDataAddress = body.GetUserData();
+			BodyRuntimeData* bodyRuntimeData = reinterpret_cast<BodyRuntimeData*>(bodyRuntimeDataAddress);
+			std::cout << "Data is: " << bodyRuntimeData->myInt << '\n';
+
 			lockWrite.ReleaseLock();
 		}
 	}
@@ -316,6 +322,11 @@ std::string PhysicsServiceImpl::AddNewSphereToPhysicsWorld
 
 		return creationErrorString;
 	}
+
+	auto newBodyRuntimeData = new BodyRuntimeData();
+	newBodyRuntimeData->myInt = 20;
+	uint64_t bodyRuntimeDataAsInt = reinterpret_cast<uint64_t>(newBodyRuntimeData);
+	newSphereBody->SetUserData(bodyRuntimeDataAsInt);
 
 	// Add the body's ID to the list of IDs
 	BodyIdList.push_back(newBodyId);

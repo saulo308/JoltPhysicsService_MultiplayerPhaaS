@@ -1,4 +1,6 @@
 #include "PhysicsServiceSocketServer.h"
+#include "../Communication/MessageHandling/MessageHandlerParser.h"
+#include "../Communication/MessageHandling/MessageHandlers/MessageHandler_InitPhysicsSystem.h"
 #include <sstream>
 #include <chrono>
 #include <fstream>
@@ -86,7 +88,11 @@ bool PhysicsServiceSocketServer::OpenServerSocket(const char* serverPort)
     close(serverListenSocket);
 
     PhysicsServiceImplementation = new PhysicsServiceImpl();
+    CurrentMessageHandlerParser = new MessageHandlerParser();
     CurrentPhysicsStepSimulationWithoutCommsTimeMeasure = "";
+
+    CurrentMessageHandlerParser->register_handler
+        <MessageHandler_InitPhysicsSystem>("Init");
 
     // Receive until the peer shuts down the connection
     ssize_t messageReceivalReturnValue = 0;
