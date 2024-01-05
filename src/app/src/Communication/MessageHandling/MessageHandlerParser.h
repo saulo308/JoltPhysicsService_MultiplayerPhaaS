@@ -8,6 +8,8 @@
 
 class MessageHandlerParser final
 {
+    using HandlerPtr = std::unique_ptr<MessageHandlerBase>;
+
 public:
     void handleMessage(const std::string& message);
 
@@ -21,8 +23,6 @@ private:
     std::string extractHandlerTypeFromMessage(const std::string& message);
 
 public:
-    using HandlerPtr = std::unique_ptr<MessageHandlerBase>;
-
     std::unordered_map<std::string, HandlerPtr> messageHandlersMap;
 
 };

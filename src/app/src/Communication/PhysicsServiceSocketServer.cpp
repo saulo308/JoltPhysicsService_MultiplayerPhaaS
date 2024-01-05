@@ -88,9 +88,9 @@ bool PhysicsServiceSocketServer::OpenServerSocket(const char* serverPort)
     close(serverListenSocket);
 
     PhysicsServiceImplementation = new PhysicsServiceImpl();
-    CurrentMessageHandlerParser = new MessageHandlerParser();
     CurrentPhysicsStepSimulationWithoutCommsTimeMeasure = "";
 
+    CurrentMessageHandlerParser = new MessageHandlerParser();
     CurrentMessageHandlerParser->register_handler
         <MessageHandler_InitPhysicsSystem>("Init");
 
