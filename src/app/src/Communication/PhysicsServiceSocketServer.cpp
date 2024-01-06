@@ -73,7 +73,7 @@ void PhysicsServiceSocketServer::RunDebugSimulation()
     // Execute 30 physics steps
     for(int i = 0; i < 2; i++)
     { 
-        std::string stepPhysicsSystemMessage = "Step\n";
+        std::string stepPhysicsSystemMessage = "Step\nMessageEnd\n";
 
         // Step physics simulation and get result
         std::string stepSimulationResult = 
@@ -161,7 +161,7 @@ bool PhysicsServiceSocketServer::OpenServerSocket(const char* serverPort)
         <MessageHandler_AddBody>("AddBody", 
         physicsServiceImplementation);
 
-    // Receive until the peer shuts down the connection
+    // Receive messages until the peer shuts down the connection
     ssize_t messageReceivalReturnValue = 0;
     do 
     {
@@ -212,91 +212,7 @@ bool PhysicsServiceSocketServer::OpenServerSocket(const char* serverPort)
 
             // Empty the current decoded message
             decodedMessage = "";
-
-            continue;
         }
-
-            /*
-            if((decodedMessage.find("Init") != std::string::npos) 
-                && (decodedMessage.find("EndMessage") != std::string::npos))
-            {
-                // Initialize the physics system
-                InitializePhysicsSystem(decodedMessage);
-
-                // Send client the confirmation
-                SendMessageToClient(clientSocket, "MessageEnd");
-                decodedMessage = "";
-                continue;
-            }
-
-            if(decodedMessage.find("Step") != std::string::npos)
-            {
-                // Get pre step physics time
-                std::chrono::steady_clock::time_point preStepPhysicsTime = 
-                    std::chrono::steady_clock::now();
-
-                // Step the physics world and get result
-                std::string stepSimulationResult = StepPhysicsSimulation();
-                stepSimulationResult += "MessageEnd\n";
-
-                // Get post physics communication time
-                std::chrono::steady_clock::time_point postStepPhysicsTime = 
-                    std::chrono::steady_clock::now();
-
-                // Calculate the microsseconds all step physics simulation
-                // (considering communication )took
-                std::stringstream ss;
-                ss << std::chrono::duration_cast<std::chrono::microseconds>
-                    (postStepPhysicsTime - preStepPhysicsTime).count();
-                const std::string elapsedTime = ss.str();
-
-                // Append the delta time to the current step measurement
-                currentPhysicsStepSimulationWithoutCommsTimeMeasure 
-                    += elapsedTime + "\n";
-
-                // Send step physics result to client
-                SendMessageToClient(clientSocket, stepSimulationResult);
-                decodedMessage = "";
-
-                continue;
-            }
-
-            // Check if we should add a new sphere body
-            if(decodedMessage.find("AddSphereBody") != std::string::npos)
-            {
-                // Add new sphere body (the method will parse the string)
-                std::string SphereBodyAddOperationResult = 
-                    AddNewSphereBody(decodedMessage);
-                SphereBodyAddOperationResult += "MessageEnd\n";
-
-                // Send operation result to client
-                SendMessageToClient(clientSocket, SphereBodyAddOperationResult);
-
-                // Clear received message
-                decodedMessage = "";
-                continue;
-            }
-
-            // Check if we should remove a body
-            if(decodedMessage.find("RemoveBody") != std::string::npos)
-            {
-                // Remove the body (the method will parse the string)
-                std::string BodyRemovalOperationResult = 
-                    RemoveBody(decodedMessage);
-                BodyRemovalOperationResult += "MessageEnd\n";
-
-                // Send operation result to client
-                SendMessageToClient(clientSocket, BodyRemovalOperationResult);
-
-                // Clear received message
-                decodedMessage = "";
-                continue;
-            }
-
-            std::cout << "Unknown message: " << decodedMessage << std::endl;
-            SendMessageToClient(clientSocket, "Unkown message error");
-        }
-        */
     } while (messageReceivalReturnValue > 0);
 
     // Save step physics measurement to file
@@ -446,160 +362,6 @@ bool PhysicsServiceSocketServer::SendMessageToClient(int clientSocket,
     printf("Message sent: %s\n", messageBuffer);
     printf("Bytes sent: %ld\n", sendReturnValue);
     return true;
-}
-
-void PhysicsServiceSocketServer::InitializePhysicsSystem
-    (const std::string initializationActorsInfo)
-{
-    if(!physicsServiceImplementation)
-    {
-        std::cout << "No physics service implementation valid to init physics system.\n";
-        return;
-    }
-
-    physicsServiceImplementation->InitPhysicsSystem(initializationActorsInfo);
-}
-
-/** 
-* Message template:
-*
-* "Step"
-*/
-std::string PhysicsServiceSocketServer::StepPhysicsSimulation()
-{
-    if(!physicsServiceImplementation)
-    {
-        std::cout << "No physics service implementation valid to step physics simulation.\n";
-        return "";
-    }
-
-    return physicsServiceImplementation->StepPhysicsSimulation();
-}
-
-/** 
-* Message template:
-*
-* "AddSphereBody\n
-* id; posX; posY; posZ; rotX; rotY; rotZ"
-*
-*/
-std::string PhysicsServiceSocketServer::AddNewSphereBody
-    (const std::string decodedMessageWithNewBodyInfo)
-{
-    std::cout << "New sphere body addition requested. Processing...\n";
-
-    if(!physicsServiceImplementation)
-    {
-        std::cout << "No physics service implementation valid to add new sphere body.\n";
-        return "Error: Could not create sphere as physics service implementation is null.";
-    }
-
-    // Split decoded message into lines
-	std::stringstream decodedMessageStringStream
-        (decodedMessageWithNewBodyInfo);
-    std::vector<std::string> newBodyDataLines;
-
-	std::string line;
-    while (std::getline(decodedMessageStringStream, line)) 
-	{
-        newBodyDataLines.push_back(line);
-    }
-
-    // Check if line has the right amount of lines
-    if(newBodyDataLines.size() != 2)
-    {
-        std::cout << "New sphere creation decoded message does not have the right amount of data.\n";
-        return "Error: Could not create sphere as decoded message does not contain the right amount of data.";
-    }
-
-    // Get the second line as it contain the new sphere's creation data
-    // ("id; posX; posY; posZ; rotX; rotY; rotZ")
-    const std::string newSphereBodyData = newBodyDataLines[1];
-
-	// Split info with ";" delimiter
-	std::stringstream newSphereBodyDataStream(newSphereBodyData);
-	std::vector<std::string> newSphereBodyParsedData;
-
-	while (std::getline(newSphereBodyDataStream, line, ';')) 
-	{
-		newSphereBodyParsedData.push_back(line);
-	}
-
-    // Get the new sphere body's ID
-	const int newSphereId = std::stoi(newSphereBodyParsedData[0]);
-
-    // Get the new sphere body's position
-	const double initialPosX = std::stod(newSphereBodyParsedData[1]);
-	const double initialPosY = std::stod(newSphereBodyParsedData[2]);
-	const double initialPosZ = std::stod(newSphereBodyParsedData[3]);
-
-    // Create data for sphere creation
-    const BodyID newSphereBodyID(newSphereId);
-    const RVec3 newSphereInitialPos(initialPosX, initialPosY, initialPosZ);
-
-    // Request the creation of sphere
-    std::string additionReturn = 
-        physicsServiceImplementation->AddNewSphereToPhysicsWorld
-        (newSphereBodyID, newSphereInitialPos);
-
-    std::cout << additionReturn;
-    return additionReturn;
-}   
-
-/** 
-* Message template:
-*
-* "RemoveBody\n
-* id\n
-* MessageEnd\n"
-*/
-std::string PhysicsServiceSocketServer::RemoveBody
-    (const std::string decodedMessageWithRemoveBodyInfo)
-{
-    std::cout << "Remove body requested. Processing...\n";
-
-    if(!physicsServiceImplementation)
-    {
-        std::cout << "No physics service implementation valid to remove body.\n";
-        return "Error: Could not remove body as physics service implementation is null.";
-    }
-
-    // Split decoded message into lines
-	std::stringstream decodedMessageStringStream
-        (decodedMessageWithRemoveBodyInfo);
-    std::vector<std::string> newBodyDataLines;
-
-	std::string line;
-    while (std::getline(decodedMessageStringStream, line)) 
-	{
-        newBodyDataLines.push_back(line);
-    }
-
-    // Check if line has the right amount of lines
-    if(newBodyDataLines.size() != 2)
-    {
-        std::cout << "Remove body decoded message does not have the right amount of data.\n";
-        return "Error: Could not remove body as decoded message does not contain the right amount of data.";
-    }
-
-    // Get the second line as it contain the new sphere's creation data
-    // ("id")
-    const std::string bodyToRemoveData = newBodyDataLines[1];
-
-    // Get the requested body's ID for removal
-	const int bodyIdToRemoveAsInt = std::stoi(bodyToRemoveData);
-
-    // Convert the id into BodyId
-    const BodyID bodyIdToRemove(bodyIdToRemoveAsInt);
-
-    std::cout << "Requesting physics service to remove body...\n";
-
-    // Request the creation of sphere
-    std::string removalReturn = 
-        physicsServiceImplementation->RemoveBodyByID(bodyIdToRemove);
-
-    std::cout << removalReturn;
-    return removalReturn;
 }
 
 void PhysicsServiceSocketServer::SaveStepPhysicsMeasureToFile()

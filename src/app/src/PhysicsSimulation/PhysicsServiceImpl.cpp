@@ -132,8 +132,7 @@ void PhysicsServiceImpl::InitPhysicsSystem
         initializationActorsInfoLines.push_back(line);
     }
 
-	// for each line (begin from "1" as first is only "Init" into "size() - 1"
-	// as the last is "EndMessage"), create a new body with according to the
+	// for each line, create a new body with according to the
 	// body's type, id and initial location
 	for(int i = 0; i < initializationActorsInfoLines.size(); i++)
 	{

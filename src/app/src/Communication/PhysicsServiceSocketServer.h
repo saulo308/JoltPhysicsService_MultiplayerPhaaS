@@ -106,69 +106,6 @@ private:
     /** Saves the step physics measurement to a file. */
     void SaveStepPhysicsMeasureToFile();
 
-public:
-    /** 
-    * Initializes a physics system. On the param, could receive initial bodies
-    * to create on the physics system.
-    * 
-    * The message's template should be:
-    * "Init\n
-    * Id_0; posX_0; posY_0; posZ_0\n
-    * Id_1; posX_1; posY_1; posZ_1\n
-    * Id_2; posX_2; posY_2; posZ_2\n
-    * ...
-    * MessageEnd"
-    */
-    void InitializePhysicsSystem(const std::string initializationActorsInfo);
-
-    /** 
-    * Steps the current physics system simulation.
-    * 
-    * The message's template should be:
-    * "Step"
-    * 
-    * @return The step physics simulation result. This will send each actor's
-    * Id, position and rotation of the current physics system state back to
-    * the client
-    */
-    std::string StepPhysicsSimulation();
-
-public:
-    /** 
-    * Adds a new sphere body to the physics system.
-    * The message template should be:
-    * 
-    * "AddSphereBody\n
-    * id; posX; posY; posZ\n
-    * MessageEnd\n"
-    * 
-    * @param decodedMessageWithNewBodyInfo The received message from the client
-    * with the info to create a new sphere body
-    * 
-    * @return The result of adding a new sphere body. May return a failure 
-    * message if could not succesfully add the new sphere body on the physics 
-    * system
-    */
-    std::string AddNewSphereBody
-        (const std::string decodedMessageWithNewBodyInfo);
-
-    /** 
-    * Removes a body from the physics system.
-    * The message template should be:
-    * 
-    * "RemoveBody\n
-    * id\n
-    * MessageEnd\n"
-    * 
-    * @param decodedMessageWithRemoveBodyInfo The received message from the 
-    * client with the info to remove the body
-    * 
-    * @return The result of removing a body. May return a failure message if 
-    * could not succesfully remove the body from the physics system
-    */
-    std::string RemoveBody
-        (const std::string decodedMessageWithRemoveBodyInfo);
-
 private:
     /** 
     * The physics system implementation. This implement the JoltPhysics that
