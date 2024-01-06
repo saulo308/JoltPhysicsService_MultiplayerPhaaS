@@ -18,6 +18,6 @@ std::string MessageHandler_InitPhysicsSystem::handleMessage
     // Initialize the physics system with the given info
     physicsServiceImplementation->InitPhysicsSystem(message); 
 
-    std::cout << "Physics system initialized.\n";
+    std::cout << "Physics system initialized.\n\n";
     return "Physics system initialized.";
 }

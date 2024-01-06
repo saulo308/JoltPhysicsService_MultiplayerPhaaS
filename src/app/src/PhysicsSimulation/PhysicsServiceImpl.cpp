@@ -5,7 +5,7 @@ void PhysicsServiceImpl::InitPhysicsSystem
 	(const std::string initializationActorsInfo)
 {
     std::cout << "Initializing physics system...\n";
-    std::cout << "InitializationInfo:\n" << initializationActorsInfo << "\n";
+    std::cout << "InitializationInfo:\n" << initializationActorsInfo << '\n';
 
 	// If physics system is already initialized, clear the last initialization
 	if(bIsInitialized)
@@ -201,7 +201,7 @@ void PhysicsServiceImpl::InitPhysicsSystem
 
 	bIsInitialized = true;
 
-    std::cout << "Physics world has been initialized and is running.\n\n";
+    std::cout << "Physics world has been initialized and is running.\n";
 }
 
 std::string PhysicsServiceImpl::StepPhysicsSimulation()
@@ -279,7 +279,15 @@ std::string PhysicsServiceImpl::StepPhysicsSimulation()
 			+ std::to_string(rotation.GetY()) + ";" 
 			+ std::to_string(rotation.GetZ());
 
-		stepPhysicsResponse += actorStepPhysicsRotationResult + "\n";
+		// Append the step physics result
+		stepPhysicsResponse += actorStepPhysicsRotationResult;
+
+		// If not the last body, append a new line (the last line wont have a
+		// new line character as we don't need it)
+		if(bodyId != BodyIdList.back())
+		{
+			stepPhysicsResponse += '\n';
+		}
 	}
 
 	std::cout << "(Step:" << stepPhysicsCounter++ << ")" 

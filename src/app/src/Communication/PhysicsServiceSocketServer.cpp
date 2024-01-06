@@ -1,6 +1,7 @@
 #include "PhysicsServiceSocketServer.h"
 #include "../Communication/MessageHandling/MessageHandlerParser.h"
 #include "../Communication/MessageHandling/MessageHandlers/MessageHandler_InitPhysicsSystem.h"
+#include "../Communication/MessageHandling/MessageHandlers/MessageHandler_StepPhysicsSystem.h"
 #include <sstream>
 #include <chrono>
 #include <fstream>
@@ -15,7 +16,7 @@ void PhysicsServiceSocketServer::RunDebugSimulation()
 
     // Initializing physics system with two spheres and a floor 
     std::string initPhysicsSystemMessage = 
-        "Init;\n"
+        "Init\n"
         "floor;0;0;0;0\n"
         "sphere;1;0;0;250\n"
         "sphere;2;250;0;250\n"
@@ -32,24 +33,26 @@ void PhysicsServiceSocketServer::RunDebugSimulation()
         <MessageHandler_InitPhysicsSystem>("Init", 
         physicsServiceImplementation);
 
+    // Register InitPhysicsSystem handler (message type: "Step")
+    physicsServiceMessageHandlerParser->register_handler
+        <MessageHandler_StepPhysicsSystem>("Step", 
+        physicsServiceImplementation);
+
     // Handle the init message
     physicsServiceMessageHandlerParser->handleMessage(initPhysicsSystemMessage);
 
-    /*
-    InitializePhysicsSystem(test);
     std::cout << "Steping physics...\n";
 
     // Execute 30 physics steps
-    int step = 0;
     for(int i = 0; i < 30; i++)
-    {
-        // Step physics simulation and get result
-        std::string stepSimulationResult = StepPhysicsSimulation();
+    { 
+        std::string stepPhysicsSystemMessage = "Step\n";
 
-        // Print result
-        std::cout << "Step(" << step++ << "): \n" 
-            << stepSimulationResult << '\n';
-    }*/
+        // Step physics simulation and get result
+        std::string stepSimulationResult = 
+            physicsServiceMessageHandlerParser->handleMessage
+            (stepPhysicsSystemMessage);
+    }
 }
 
 bool PhysicsServiceSocketServer::OpenServerSocket(const char* serverPort)
@@ -114,6 +117,11 @@ bool PhysicsServiceSocketServer::OpenServerSocket(const char* serverPort)
     // Register InitPhysicsSystem handler (message type: "Init")
     physicsServiceMessageHandlerParser->register_handler
         <MessageHandler_InitPhysicsSystem>("Init", 
+        physicsServiceImplementation);
+
+    // Register InitPhysicsSystem handler (message type: "Step")
+    physicsServiceMessageHandlerParser->register_handler
+        <MessageHandler_StepPhysicsSystem>("Step", 
         physicsServiceImplementation);
 
     // Receive until the peer shuts down the connection

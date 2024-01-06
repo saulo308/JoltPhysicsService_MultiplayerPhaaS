@@ -15,14 +15,17 @@ std::string MessageHandlerParser::handleMessage(std::string& message)
     }
 
     // If not, call the unknown message method
-    return "Error: Message type could not be handled.\n";
+    std::cout << "Error: Message type could not be handled.\n" <<
+        "Every receving message should have the message type on the first line.\n";
+    return "Error: Message type could not be handled.";
 }
 
 std::string MessageHandlerParser::extractHandlerTypeFromMessage
     (const std::string& message)
 {
-    // Get the message type delimite (";")
-    const size_t messageTypeDelimiterPos = message.find(";");
+    // Get the message type delimiter ('\n') every message should have the
+    // handler type on the first line
+    const size_t messageTypeDelimiterPos = message.find('\n');
 
     // If found the delimiter, return the substring from the message init into 
     // it
