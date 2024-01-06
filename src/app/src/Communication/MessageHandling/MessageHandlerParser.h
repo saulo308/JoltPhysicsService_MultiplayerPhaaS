@@ -11,7 +11,7 @@ class MessageHandlerParser final
     using HandlerPtr = std::unique_ptr<MessageHandlerBase>;
 
 public:
-    std::string handleMessage(const std::string& message);
+    std::string handleMessage(std::string& message);
 
     template <typename T>
     void register_handler(const std::string& messageType, 

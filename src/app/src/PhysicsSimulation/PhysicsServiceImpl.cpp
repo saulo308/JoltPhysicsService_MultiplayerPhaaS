@@ -135,7 +135,7 @@ void PhysicsServiceImpl::InitPhysicsSystem
 	// for each line (begin from "1" as first is only "Init" into "size() - 1"
 	// as the last is "EndMessage"), create a new body with according to the
 	// body's type, id and initial location
-	for(int i = 1; i < initializationActorsInfoLines.size() - 1; i++)
+	for(int i = 0; i < initializationActorsInfoLines.size(); i++)
 	{
 		// Split info with ";" delimiter
 		std::stringstream actorInfoStringStream
@@ -334,16 +334,18 @@ std::string PhysicsServiceImpl::AddNewSphereToPhysicsWorld
 	// Testing a small velocity on Y-axis
 	//newSphereBody->SetLinearVelocity(Vec3Arg(0.f, 1000.f, 0.f));
 
-	std::cout << "New sphere body created and added to physics system succesfully.\n";
-
 	// Add the new sphere to the world
 	body_interface->AddBody(newSphereBody->GetID(), EActivation::Activate);
-	return "New sphere body created succesfully.\n";
+
+	std::cout << "New sphere body created and added to physics system succesfully.\n";
+	return "New sphere body created succesfully.";
 }
 
 std::string PhysicsServiceImpl::AddNewFloorToPhysicsSystem
 	(const BodyID newBodyId, const RVec3 newBodyInitialPosition)
 {
+	std::cout << "NewFloor addition to physics world requested.\n";
+
 	// Create the settings for the collision volume (the shape)
 	BoxShapeSettings floor_shape_settings(Vec3(1000.0f, 1000.f, 100.0f));
 
@@ -379,7 +381,8 @@ std::string PhysicsServiceImpl::AddNewFloorToPhysicsSystem
 	// Add it to the world
 	body_interface->AddBody(floor->GetID(), EActivation::DontActivate);
 
-	return "New floor body created succesfully.\n";
+	std::cout << "New floor body created and added to physics system succesfully.\n";
+	return "New floor body created succesfully.";
 }
 
 std::string PhysicsServiceImpl::RemoveBodyByID(const BodyID bodyToRemoveID)

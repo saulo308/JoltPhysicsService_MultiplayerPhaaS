@@ -1,6 +1,6 @@
 #include "MessageHandlerParser.h"
 
-std::string MessageHandlerParser::handleMessage(const std::string& message)
+std::string MessageHandlerParser::handleMessage(std::string& message)
 {
     // Extracting the handler type from the message
     const std::string handlerType = extractHandlerTypeFromMessage(message);

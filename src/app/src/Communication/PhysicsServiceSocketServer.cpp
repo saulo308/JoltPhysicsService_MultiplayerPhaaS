@@ -14,12 +14,12 @@ void PhysicsServiceSocketServer::RunDebugSimulation()
     physicsServiceImplementation = new PhysicsServiceImpl();
 
     // Initializing physics system with two spheres and a floor 
-    const std::string initPhysicsSystemMessage = 
+    std::string initPhysicsSystemMessage = 
         "Init;\n"
         "floor;0;0;0;0\n"
         "sphere;1;0;0;250\n"
         "sphere;2;250;0;250\n"
-        "EndMessage\n";
+        "MessageEnd\n";
 
     // Create the physics service message handler parser to parse and
     // delegate incoming messages
@@ -139,18 +139,39 @@ bool PhysicsServiceSocketServer::OpenServerSocket(const char* serverPort)
         // Debug: Print received message
         if(messageReceivalReturnValue > 0)
         {
-            //  (DEBUG) Print received message
+            // Append the decoded message as string (the 
+            // "messageReceivalReturnValue" indicates the message length)
             decodedMessage += std::string(receivingBuffer, receivingBuffer 
                 + messageReceivalReturnValue);
+            
+            //  (DEBUG) Print received message
             std::cout << "Decoded message:" << decodedMessage << "\n=======\n";
 
-            // Handle the incoming decoded message
+            // While the decoded message does not find "MessageEnd" on the 
+            // decoded message, keep appending to the string. This is needed
+            // as we may be getting chunks of the actual message
+            if(decodedMessage.find("MessageEnd") == std::string::npos)
+            {
+                continue;
+            }
+
+            // Handle the decoded message by passing it to the parser. He will
+            // call the proper handler or generate an error if could not find 
+            // a proper handler
             std::string messageHandlerReturn = 
                 physicsServiceMessageHandlerParser->handleMessage
                 (decodedMessage);
 
-            
+            // Send the handler return to the client
+            SendMessageToClient(clientSocket, messageHandlerReturn);
 
+            // Empty the current decoded message
+            decodedMessage = "";
+
+            continue;
+        }
+
+            /*
             if((decodedMessage.find("Init") != std::string::npos) 
                 && (decodedMessage.find("EndMessage") != std::string::npos))
             {
@@ -189,8 +210,7 @@ bool PhysicsServiceSocketServer::OpenServerSocket(const char* serverPort)
                     += elapsedTime + "\n";
 
                 // Send step physics result to client
-                SendMessageToClient(clientSocket, 
-                    stepSimulationResult.c_str());
+                SendMessageToClient(clientSocket, stepSimulationResult);
                 decodedMessage = "";
 
                 continue;
@@ -200,13 +220,12 @@ bool PhysicsServiceSocketServer::OpenServerSocket(const char* serverPort)
             if(decodedMessage.find("AddSphereBody") != std::string::npos)
             {
                 // Add new sphere body (the method will parse the string)
-                auto SphereBodyAddOperationResult = 
+                std::string SphereBodyAddOperationResult = 
                     AddNewSphereBody(decodedMessage);
                 SphereBodyAddOperationResult += "MessageEnd\n";
 
                 // Send operation result to client
-                SendMessageToClient(clientSocket, 
-                    SphereBodyAddOperationResult.c_str());
+                SendMessageToClient(clientSocket, SphereBodyAddOperationResult);
 
                 // Clear received message
                 decodedMessage = "";
@@ -217,13 +236,12 @@ bool PhysicsServiceSocketServer::OpenServerSocket(const char* serverPort)
             if(decodedMessage.find("RemoveBody") != std::string::npos)
             {
                 // Remove the body (the method will parse the string)
-                auto BodyRemovalOperationResult = 
+                std::string BodyRemovalOperationResult = 
                     RemoveBody(decodedMessage);
                 BodyRemovalOperationResult += "MessageEnd\n";
 
                 // Send operation result to client
-                SendMessageToClient(clientSocket, 
-                    BodyRemovalOperationResult.c_str());
+                SendMessageToClient(clientSocket, BodyRemovalOperationResult);
 
                 // Clear received message
                 decodedMessage = "";
@@ -233,6 +251,7 @@ bool PhysicsServiceSocketServer::OpenServerSocket(const char* serverPort)
             std::cout << "Unknown message: " << decodedMessage << std::endl;
             SendMessageToClient(clientSocket, "Unkown message error");
         }
+        */
     } while (messageReceivalReturnValue > 0);
 
     // Save step physics measurement to file
@@ -355,8 +374,18 @@ ssize_t PhysicsServiceSocketServer::ReceiveMessageFromClient(int clientSocket,
 }
 
 bool PhysicsServiceSocketServer::SendMessageToClient(int clientSocket, 
-    const char* messageBuffer)
+    std::string& messageToSend)
 {
+    // Check if message does not have "MessageEnd" on it
+    if(messageToSend.find("MessageEnd") == std::string::npos)
+    {
+        // If not, append to it
+        messageToSend += "\nMessageEnd\n";
+    }
+
+    // Convert the message to send to char*
+    const char* messageBuffer = messageToSend.c_str();
+
     // Send the given message to the client
     const ssize_t sendReturnValue = send(clientSocket, messageBuffer, 
         strlen(messageBuffer), 0);

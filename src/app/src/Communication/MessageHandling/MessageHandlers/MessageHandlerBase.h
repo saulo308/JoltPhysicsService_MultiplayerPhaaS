@@ -17,7 +17,7 @@ public:
     }
 
     /** */
-    virtual std::string handleMessage(const std::string& message) = 0;
+    virtual std::string handleMessage(std::string& message);
 
 protected:
     /** */

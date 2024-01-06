@@ -6,7 +6,7 @@
 class MessageHandler_InitPhysicsSystem : public MessageHandlerBase
 {
 public:
-    std::string handleMessage(const std::string& message) override;
+    std::string handleMessage(std::string& message) override;
 };
 
 #endif

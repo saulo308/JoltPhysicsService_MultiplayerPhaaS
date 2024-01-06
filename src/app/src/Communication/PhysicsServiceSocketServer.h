@@ -96,12 +96,12 @@ private:
     * Sends a message to the client. 
     * 
     * @param clientSocket The connected client's socket to send the message to
-    * @param messageBuffer The message to send the client
+    * @param messageToSend The message to send the client
     * 
     * @return True if could succesfully send the message to the client and
     * false otherwise
     */
-    bool SendMessageToClient(int clientSocket, const char* messageBuffer);
+    bool SendMessageToClient(int clientSocket, std::string& messageToSend);
 
     /** Saves the step physics measurement to a file. */
     void SaveStepPhysicsMeasureToFile();
