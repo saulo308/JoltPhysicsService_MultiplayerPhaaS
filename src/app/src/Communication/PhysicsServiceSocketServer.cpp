@@ -2,6 +2,8 @@
 #include "../Communication/MessageHandling/MessageHandlerParser.h"
 #include "../Communication/MessageHandling/MessageHandlers/MessageHandler_InitPhysicsSystem.h"
 #include "../Communication/MessageHandling/MessageHandlers/MessageHandler_StepPhysicsSystem.h"
+#include "../Communication/MessageHandling/MessageHandlers/MessageHandler_RemoveBody.h"
+#include "../Communication/MessageHandling/MessageHandlers/MessageHandler_AddBody.h"
 #include <sstream>
 #include <chrono>
 #include <fstream>
@@ -13,14 +15,6 @@ void PhysicsServiceSocketServer::RunDebugSimulation()
 {
     // Creating a new physics service implementation
     physicsServiceImplementation = new PhysicsServiceImpl();
-
-    // Initializing physics system with two spheres and a floor 
-    std::string initPhysicsSystemMessage = 
-        "Init\n"
-        "floor;0;0;0;0\n"
-        "sphere;1;0;0;250\n"
-        "sphere;2;250;0;250\n"
-        "MessageEnd\n";
 
     // Create the physics service message handler parser to parse and
     // delegate incoming messages
@@ -38,13 +32,46 @@ void PhysicsServiceSocketServer::RunDebugSimulation()
         <MessageHandler_StepPhysicsSystem>("Step", 
         physicsServiceImplementation);
 
+    // Register RemoveBody handler (message type: "RemoveBody")
+    physicsServiceMessageHandlerParser->register_handler
+        <MessageHandler_RemoveBody>("RemoveBody", 
+        physicsServiceImplementation);
+    
+    // Register AddBody handler (message type: "AddBody")
+    physicsServiceMessageHandlerParser->register_handler
+        <MessageHandler_AddBody>("AddBody", 
+        physicsServiceImplementation);
+        
+    // Initializing physics system with two spheres and a floor 
+    std::string initPhysicsSystemMessage = 
+        "Init\n"
+        "floor;0;0;0;0\n"
+        "sphere;1;0;0;250\n"
+        "sphere;2;250;0;250\n"
+        "MessageEnd\n";
+
     // Handle the init message
     physicsServiceMessageHandlerParser->handleMessage(initPhysicsSystemMessage);
+
+    // Testing body removal handler
+    std::string removeBodyMessage = 
+        "RemoveBody\n"
+        "1\n"
+        "MessageEnd\n";
+    physicsServiceMessageHandlerParser->handleMessage(removeBodyMessage);
+
+    // Testing add body handler (note that the bodyID is not 1, so the body ID
+    // 1 should not exist and the bodyID 4 should)
+    std::string addBodyMessage = 
+        "AddBody\n"
+        "4;0;0;250\n"
+        "MessageEnd\n";
+    physicsServiceMessageHandlerParser->handleMessage(addBodyMessage);
 
     std::cout << "Steping physics...\n";
 
     // Execute 30 physics steps
-    for(int i = 0; i < 30; i++)
+    for(int i = 0; i < 2; i++)
     { 
         std::string stepPhysicsSystemMessage = "Step\n";
 
@@ -122,6 +149,16 @@ bool PhysicsServiceSocketServer::OpenServerSocket(const char* serverPort)
     // Register InitPhysicsSystem handler (message type: "Step")
     physicsServiceMessageHandlerParser->register_handler
         <MessageHandler_StepPhysicsSystem>("Step", 
+        physicsServiceImplementation);
+
+    // Register REmoveBody handler (message type: "RemoveBody")
+    physicsServiceMessageHandlerParser->register_handler
+        <MessageHandler_RemoveBody>("RemoveBody", 
+        physicsServiceImplementation);
+
+    // Register AddBody handler (message type: "AddBody")
+    physicsServiceMessageHandlerParser->register_handler
+        <MessageHandler_AddBody>("AddBody", 
         physicsServiceImplementation);
 
     // Receive until the peer shuts down the connection
@@ -513,7 +550,8 @@ std::string PhysicsServiceSocketServer::AddNewSphereBody
 * Message template:
 *
 * "RemoveBody\n
-* id"
+* id\n
+* MessageEnd\n"
 */
 std::string PhysicsServiceSocketServer::RemoveBody
     (const std::string decodedMessageWithRemoveBodyInfo)

@@ -112,7 +112,7 @@ public:
     * to create on the physics system.
     * 
     * The message's template should be:
-    * "Init;\n
+    * "Init\n
     * Id_0; posX_0; posY_0; posZ_0\n
     * Id_1; posX_1; posY_1; posZ_1\n
     * Id_2; posX_2; posY_2; posZ_2\n
@@ -139,7 +139,8 @@ public:
     * The message template should be:
     * 
     * "AddSphereBody\n
-    *  id; posX; posY; posZ; rotX; rotY; rotZ"
+    * id; posX; posY; posZ\n
+    * MessageEnd\n"
     * 
     * @param decodedMessageWithNewBodyInfo The received message from the client
     * with the info to create a new sphere body
@@ -156,7 +157,8 @@ public:
     * The message template should be:
     * 
     * "RemoveBody\n
-    * id"
+    * id\n
+    * MessageEnd\n"
     * 
     * @param decodedMessageWithRemoveBodyInfo The received message from the 
     * client with the info to remove the body

@@ -345,8 +345,9 @@ std::string PhysicsServiceImpl::AddNewSphereToPhysicsWorld
 	// Add the new sphere to the world
 	body_interface->AddBody(newSphereBody->GetID(), EActivation::Activate);
 
-	std::cout << "New sphere body created and added to physics system succesfully.\n";
-	return "New sphere body created succesfully.";
+	std::cout << "New sphere body created and added to physics system "
+		"succesfully.\n";
+	return "New sphere body created successfully.";
 }
 
 std::string PhysicsServiceImpl::AddNewFloorToPhysicsSystem
@@ -389,8 +390,9 @@ std::string PhysicsServiceImpl::AddNewFloorToPhysicsSystem
 	// Add it to the world
 	body_interface->AddBody(floor->GetID(), EActivation::DontActivate);
 
-	std::cout << "New floor body created and added to physics system succesfully.\n";
-	return "New floor body created succesfully.";
+	std::cout << "New floor body created and added to physics system "
+		"succesfully.\n";
+	return "New floor body created successfully.";
 }
 
 std::string PhysicsServiceImpl::RemoveBodyByID(const BodyID bodyToRemoveID)
@@ -408,11 +410,10 @@ std::string PhysicsServiceImpl::RemoveBodyByID(const BodyID bodyToRemoveID)
 	BodyIdList.erase(std::remove(BodyIdList.begin(), BodyIdList.end(), 
 		bodyToRemoveID), BodyIdList.end());
 
-	std::cout << "Removed from BodyIdList...\n";
-
 	// Remove the body by its ID
 	body_interface->RemoveBody(bodyToRemoveID);
-	return "Body removal processed succesfully\n";
+
+	return "Body removal processed successfully";
 }
 
 void PhysicsServiceImpl::ClearPhysicsSystem()

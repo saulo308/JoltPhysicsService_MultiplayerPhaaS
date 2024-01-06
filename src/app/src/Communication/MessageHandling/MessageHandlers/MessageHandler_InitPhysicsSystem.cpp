@@ -1,6 +1,17 @@
 #include "MessageHandler_InitPhysicsSystem.h"
 #include "../../../PhysicsSimulation/PhysicsServiceImpl.h"
 
+/* 
+* Message template:
+*
+* "Init\n
+* Id_0; posX_0; posY_0; posZ_0\n
+* Id_1; posX_1; posY_1; posZ_1\n
+* Id_2; posX_2; posY_2; posZ_2\n
+* ...
+* MessageEnd\n"
+*
+*/
 std::string MessageHandler_InitPhysicsSystem::handleMessage
     (std::string& message)
 {
@@ -11,8 +22,11 @@ std::string MessageHandler_InitPhysicsSystem::handleMessage
 
     if(!physicsServiceImplementation)
     {
-        std::cout << "No physics service implementation valid to init physics system.\n";
-        return "No physics service implementation valid to init physics system.";
+        std::cout << "No physics service implementation valid to init physics "
+            "system.\n";
+
+        return "No physics service implementation valid to init physics "
+            "system.";
     }
 
     // Initialize the physics system with the given info

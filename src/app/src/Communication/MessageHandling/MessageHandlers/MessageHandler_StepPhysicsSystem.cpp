@@ -1,6 +1,12 @@
 #include "MessageHandler_StepPhysicsSystem.h"
 #include "../../../PhysicsSimulation/PhysicsServiceImpl.h"
 
+/* 
+* Message template:
+*
+* "Step\n"
+*
+*/
 std::string MessageHandler_StepPhysicsSystem::handleMessage
     (std::string& message)
 {
@@ -11,8 +17,11 @@ std::string MessageHandler_StepPhysicsSystem::handleMessage
 
     if(!physicsServiceImplementation)
     {
-        std::cout << "No physics service implementation valid to step physics system.\n";
-        return "No physics service implementation valid to step physics system.";
+        std::cout << "No physics service implementation valid to step physics "
+            "system.\n";
+
+        return "No physics service implementation valid to step physics "
+            "system.";
     }
 
     // Step the physics system 

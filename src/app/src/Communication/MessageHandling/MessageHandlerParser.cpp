@@ -15,8 +15,10 @@ std::string MessageHandlerParser::handleMessage(std::string& message)
     }
 
     // If not, call the unknown message method
-    std::cout << "Error: Message type could not be handled.\n" <<
-        "Every receving message should have the message type on the first line.\n";
+    printf("Error: Message type could not be handled. Message: (%s).\n"
+        "Every receving message should have the message type on the first"
+        "line. The given handler type is unknown.\n\n", message.c_str());
+
     return "Error: Message type could not be handled.";
 }
 
