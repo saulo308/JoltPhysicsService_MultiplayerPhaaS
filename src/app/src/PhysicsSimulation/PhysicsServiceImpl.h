@@ -10,6 +10,7 @@
 #include "MyContactListener.h"
 #include "ObjectLayerPairFilterImpl.h"
 #include "ObjectVsBroadPhaseLayerFilterImpl.h"
+#include "BodyRuntimeData.h"
 
 #include <Jolt/RegisterTypes.h>
 #include <Jolt/Core/Factory.h>
@@ -78,8 +79,8 @@ public:
     * @return The result of the sphere's addition. May return a failure message
     * if the sphere could not be added succesfully
     */
-    std::string AddNewSphereToPhysicsWorld(const BodyID newBodyId, 
-        const RVec3 newBodyInitialPosition);
+    std::string AddNewSphereToPhysicsWorld(BodyID newBodyId, EBodyType
+        newBodyType, RVec3 newBodyInitialPosition);
 
     /** 
     * Adds a new floor to the physics world. This will add a Body to the 
@@ -107,6 +108,9 @@ public:
     * if the body could not be removed succesfully
     */
     std::string RemoveBodyByID(const BodyID bodyToRemoveID);
+
+    /** */
+    std::string UpdateBodyType(BodyID bodyIdToUpdate, EBodyType newBodyType);
 
 private:
     // Callback for traces, connect this to your own trace function if you 
@@ -139,13 +143,6 @@ private:
     };
 
 #endif // JPH_ENABLE_ASSERTS
-
-private:
-	// Save state of simulation
-	void SaveState(StateRecorderImpl &inStream);
-
-	// Restore state of simulation
-	void RestoreState(StateRecorderImpl &inStream);
 
 public:
 	TempAllocator* temp_allocator = nullptr;

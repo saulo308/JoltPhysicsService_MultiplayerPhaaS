@@ -3,12 +3,24 @@
 
 #include <iostream>
 
+enum EBodyType
+{
+    Primary,
+    Clone
+};
+
 class BodyRuntimeData final
 {
 public:
-    std::int32_t myInt = 0;
+    std::string GetBodyTypeAsString();
 
+    void UpdateBodyType(EBodyType newBodyType)
+    {
+        bodyType = newBodyType;
+    }
 
+public:
+    EBodyType bodyType = EBodyType::Primary;
 };
 
 

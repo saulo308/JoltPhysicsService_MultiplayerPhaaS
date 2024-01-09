@@ -4,6 +4,7 @@
 #include "../Communication/MessageHandling/MessageHandlers/MessageHandler_StepPhysicsSystem.h"
 #include "../Communication/MessageHandling/MessageHandlers/MessageHandler_RemoveBody.h"
 #include "../Communication/MessageHandling/MessageHandlers/MessageHandler_AddBody.h"
+#include "../Communication/MessageHandling/MessageHandlers/MessageHandler_UpdateBodyType.h"
 #include <sstream>
 #include <chrono>
 #include <fstream>
@@ -41,13 +42,18 @@ void PhysicsServiceSocketServer::RunDebugSimulation()
     physicsServiceMessageHandlerParser->register_handler
         <MessageHandler_AddBody>("AddBody", 
         physicsServiceImplementation);
+
+    // Register UpdateBodyType handler (message type: "UpdateBodyType")
+    physicsServiceMessageHandlerParser->register_handler
+        <MessageHandler_UpdateBodyType>("UpdateBodyType", 
+        physicsServiceImplementation);
         
     // Initializing physics system with two spheres and a floor 
     std::string initPhysicsSystemMessage = 
         "Init\n"
-        "floor;0;0;0;0\n"
-        "sphere;1;0;0;250\n"
-        "sphere;2;250;0;250\n"
+        "floor;0;primary;0;0;0\n"
+        "sphere;1;primary;0;0;250\n"
+        "sphere;2;primary;250;0;250\n"
         "MessageEnd\n";
 
     // Handle the init message
@@ -64,9 +70,16 @@ void PhysicsServiceSocketServer::RunDebugSimulation()
     // 1 should not exist and the bodyID 4 should)
     std::string addBodyMessage = 
         "AddBody\n"
-        "4;0;0;250\n"
+        "sphere;4;primary;0;0;250\n"
         "MessageEnd\n";
     physicsServiceMessageHandlerParser->handleMessage(addBodyMessage);
+
+    // Testing update body type handler
+    std::string updateBodyTypeMessage = 
+        "UpdateBodyType\n"
+        "4;clone\n"
+        "MessageEnd\n";
+    physicsServiceMessageHandlerParser->handleMessage(updateBodyTypeMessage);
 
     std::cout << "Steping physics...\n";
 
@@ -159,6 +172,11 @@ bool PhysicsServiceSocketServer::OpenServerSocket(const char* serverPort)
     // Register AddBody handler (message type: "AddBody")
     physicsServiceMessageHandlerParser->register_handler
         <MessageHandler_AddBody>("AddBody", 
+        physicsServiceImplementation);
+        
+    // Register UpdateBodyType handler (message type: "UpdateBodyType")
+    physicsServiceMessageHandlerParser->register_handler
+        <MessageHandler_UpdateBodyType>("UpdateBodyType", 
         physicsServiceImplementation);
 
     // Receive messages until the peer shuts down the connection

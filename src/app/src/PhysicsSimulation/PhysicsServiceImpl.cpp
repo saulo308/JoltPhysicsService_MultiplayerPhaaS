@@ -1,5 +1,4 @@
 #include "PhysicsServiceImpl.h"
-#include "BodyRuntimeData.h"
 
 void PhysicsServiceImpl::InitPhysicsSystem
 	(const std::string initializationActorsInfo)
@@ -148,29 +147,45 @@ void PhysicsServiceImpl::InitPhysicsSystem
 		}
 
 		// Check for errors
-		if(actorInfoList.size() < 5)
+		if(actorInfoList.size() < 6)
 		{
-			std::cout 
-				<< "Error on parsing initialization actor info. Line with less than 4 params: " 
-				<< initializationActorsInfoLines[i]
-				<< "\n";
+        	std::cout << "Error on parsing addBody message info. Line with "
+			"less than 6 params: " << initializationActorsInfoLines[i] << '\n';
 			continue;
 		}
 
 		// Get the actor's type to be creates
-		const std::string actorType = actorInfoList[0];
+		const std::string actorType { actorInfoList[0] };
 
 		// Get the actor ID from the init info
-		const int actorId = std::stoi(actorInfoList[1]);
+		const int actorId { std::stoi(actorInfoList[1])} ;
 		const BodyID newBodyID(actorId);
 
-		// Get actor initial pos
-		const double initialPosX = std::stod(actorInfoList[2]);
-		const double initialPosY = std::stod(actorInfoList[3]);
-		const double initialPosZ = std::stod(actorInfoList[4]);
+		// Get the new body type as string
+		const std::string newBodyTypeAsString { actorInfoList[2] };
 
-		const RVec3 bodyInitialPosition = RVec3(initialPosX, initialPosY,
-			initialPosZ);
+		// Set the new body type
+		EBodyType newBodyType {};
+		if(newBodyTypeAsString == "primary")
+		{
+			newBodyType = EBodyType::Primary;
+		}
+		else if(newBodyTypeAsString == "clone")
+		{
+			newBodyType = EBodyType::Clone;
+		}
+		else
+		{
+			std::cout << "Unknown body type: " << newBodyTypeAsString << '\n';
+		}
+
+		// Get actor initial pos
+		const double initialPosX { std::stod(actorInfoList[3]) };
+		const double initialPosY { std::stod(actorInfoList[4]) };
+		const double initialPosZ { std::stod(actorInfoList[5]) };
+
+		const RVec3 bodyInitialPosition { RVec3(initialPosX, initialPosY,
+			initialPosZ) };
 
 		// Check if we should create a floor
 		if(actorType.find("floor") != std::string::npos)
@@ -184,7 +199,8 @@ void PhysicsServiceImpl::InitPhysicsSystem
 		if(actorType.find("sphere") != std::string::npos)
 		{
 			// Add new sphere to the physics world
-			AddNewSphereToPhysicsWorld(newBodyID, bodyInitialPosition);
+			AddNewSphereToPhysicsWorld(newBodyID, newBodyType, 
+				bodyInitialPosition);
 			continue;
 		}
 	}
@@ -240,9 +256,11 @@ std::string PhysicsServiceImpl::StepPhysicsSimulation()
 			else
 				body.SetLinearVelocity(Vec3(0.f, -300.f, 0.f));
 
+			/*
 			uint64_t bodyRuntimeDataAddress = body.GetUserData();
-			BodyRuntimeData* bodyRuntimeData = reinterpret_cast<BodyRuntimeData*>(bodyRuntimeDataAddress);
-			std::cout << "Data is: " << bodyRuntimeData->myInt << '\n';
+			BodyRuntimeData* bodyRuntimeData = 
+				reinterpret_cast<BodyRuntimeData*>(bodyRuntimeDataAddress);
+			bodyRuntimeData->runtimeBodyType;*/	
 
 			lockWrite.ReleaseLock();
 		}
@@ -254,11 +272,16 @@ std::string PhysicsServiceImpl::StepPhysicsSimulation()
 		temp_allocator, job_system);
 	std::cout << "Physics stepping finished.\n";
 
-	//RestoreState(mPlaybackFrames.back());
+	std::cout << "(Step:" << stepPhysicsCounter++ << ")\n";
 
 	// For each body on the physics system:
 	for(auto& bodyId : BodyIdList)
 	{
+		std::string bodyStepResultInfo {};
+
+		// Apend the body Id as the first info on the body physics response
+		bodyStepResultInfo += std::to_string(bodyId.GetIndex()) + ";";
+
 		// Output current position of the sphere
 		RVec3 position = body_interface->GetCenterOfMassPosition(bodyId);
 
@@ -267,8 +290,8 @@ std::string PhysicsServiceImpl::StepPhysicsSimulation()
 			+ std::to_string(position.GetY()) 
 			+ ";" + std::to_string(position.GetZ());
 
-		stepPhysicsResponse += std::to_string(bodyId.GetIndex()) 
-			+ ";" + actorStepPhysicsPositionResult + ";";
+		// Append the body's physics position result
+		bodyStepResultInfo += actorStepPhysicsPositionResult + ";";
 		
 		// Output current rotation of the sphere
 		RVec3 rotation = body_interface->GetRotation(bodyId).GetEulerAngles();
@@ -278,24 +301,50 @@ std::string PhysicsServiceImpl::StepPhysicsSimulation()
 			+ std::to_string(rotation.GetY()) + ";" 
 			+ std::to_string(rotation.GetZ());
 
-		// Append the step physics result
-		stepPhysicsResponse += actorStepPhysicsRotationResult;
+		// Append the the body's physics rotation result
+		bodyStepResultInfo += actorStepPhysicsRotationResult + '\n';
 
-		// If not the last body, append a new line (the last line wont have a
-		// new line character as we don't need it)
-		if(bodyId != BodyIdList.back())
+		// Create the bodyType variable
+		std::string bodyTypeAsString {};
+
+		// Get the body lock
+		BodyLockWrite lockWrite(physics_system->GetBodyLockInterface(), 
+			bodyId);
+		if(lockWrite.Succeeded())
 		{
-			stepPhysicsResponse += '\n';
+			// Get the body
+			Body& body = lockWrite.GetBody();
+
+			// Access the body's user data
+			uint64_t bodyRuntimeDataAddress = body.GetUserData();
+
+			// Cast to BodyRuntimeData
+			BodyRuntimeData* bodyRuntimeData = 
+				reinterpret_cast<BodyRuntimeData*>(bodyRuntimeDataAddress);
+
+			// Get the body type
+			bodyTypeAsString = bodyRuntimeData->GetBodyTypeAsString();
+
+			lockWrite.ReleaseLock();
 		}
+
+		// Print the body's result
+		std::cout <<  "\t(" << bodyTypeAsString << ")" << bodyStepResultInfo;
+
+		// Append the body step result info to the step physics response
+		stepPhysicsResponse += bodyStepResultInfo;
 	}
 
+	/*
 	std::cout << "(Step:" << stepPhysicsCounter++ << ")" 
 		<< "StepPhysics response:\n" << stepPhysicsResponse << "\n";
+	*/
+	
 	return stepPhysicsResponse;
 }
 
 std::string PhysicsServiceImpl::AddNewSphereToPhysicsWorld
-	(const BodyID newBodyId, const RVec3 newBodyInitialPosition)
+	(BodyID newBodyId, EBodyType newBodyType, RVec3 newBodyInitialPosition)
 {
 	std::cout << "NewSphere addition to physics world requested.\n";
 
@@ -330,9 +379,15 @@ std::string PhysicsServiceImpl::AddNewSphereToPhysicsWorld
 		return creationErrorString;
 	}
 
+	// Create the new body runtime data
 	auto newBodyRuntimeData = new BodyRuntimeData();
-	newBodyRuntimeData->myInt = 20;
-	uint64_t bodyRuntimeDataAsInt = reinterpret_cast<uint64_t>(newBodyRuntimeData);
+
+	// Set the new body type
+	newBodyRuntimeData->bodyType = newBodyType;
+
+	// Cast to a uint64_t so we can store it on user data
+	uint64_t bodyRuntimeDataAsInt = reinterpret_cast<uint64_t>
+		(newBodyRuntimeData);
 	newSphereBody->SetUserData(bodyRuntimeDataAsInt);
 
 	// Add the body's ID to the list of IDs
@@ -415,6 +470,35 @@ std::string PhysicsServiceImpl::RemoveBodyByID(const BodyID bodyToRemoveID)
 	return "Body removal processed successfully";
 }
 
+std::string PhysicsServiceImpl::UpdateBodyType(BodyID bodyIdToUpdate,
+	EBodyType newBodyType)
+{
+	// Get the body lock
+	BodyLockWrite lockWrite(physics_system->GetBodyLockInterface(),
+		bodyIdToUpdate);
+
+	// Check if got the lock
+	if (lockWrite.Succeeded())
+	{
+		// Get the body
+		Body &body = lockWrite.GetBody();
+
+		// Access the body's user data
+		uint64_t bodyRuntimeDataAddress = body.GetUserData();
+
+		// Cast to BodyRuntimeData
+		BodyRuntimeData *bodyRuntimeData =
+			reinterpret_cast<BodyRuntimeData *>(bodyRuntimeDataAddress);
+
+		// Update the body type
+		bodyRuntimeData->UpdateBodyType(newBodyType);
+
+		lockWrite.ReleaseLock();
+	}
+
+	return "Body type updated successfuly.";
+}
+
 void PhysicsServiceImpl::ClearPhysicsSystem()
 {
     std::cout << "Cleaning physics system...\n";
@@ -447,31 +531,4 @@ void PhysicsServiceImpl::ClearPhysicsSystem()
 	bIsInitialized = false;
 
     std::cout << "Physics system was cleared. Exiting process...\n";
-}
-
-void PhysicsServiceImpl::SaveState(StateRecorderImpl &inStream)
-{
-	//mTest->SaveState(inStream);
-
-	//if (contact_listener)
-		//contact_listener->SaveState(inStream);
-
-	physics_system->SaveState(inStream);
-}
-
-void PhysicsServiceImpl::RestoreState(StateRecorderImpl &inStream)
-{
-	inStream.Rewind();
-
-	// Restore the state of the test first, this is needed because the test can make changes to
-	// the state of bodies that is not tracked by the PhysicsSystem::SaveState.
-	// E.g. in the ChangeShapeTest the shape is restored here, which needs to be done first
-	// because changing the shape changes Body::mPosition when the center of mass changes.
-	//mTest->RestoreState(inStream);
-
-	//if (contact_listener)
-		//contact_listener->RestoreState(inStream);
-
-	if (!physics_system->RestoreState(inStream))
-		std::cout << "Failed to restore physics state\n";
 }

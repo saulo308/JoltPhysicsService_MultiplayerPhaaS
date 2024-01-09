@@ -5,9 +5,9 @@
 * Message template:
 *
 * "Init\n
-* Id_0; posX_0; posY_0; posZ_0\n
-* Id_1; posX_1; posY_1; posZ_1\n
-* Id_2; posX_2; posY_2; posZ_2\n
+* Id_0; bodyType; posX_0; posY_0; posZ_0\n
+* Id_1; bodyType; posX_1; posY_1; posZ_1\n
+* Id_2; bodyType; posX_2; posY_2; posZ_2\n
 * ...
 * MessageEnd\n"
 *
