@@ -3,22 +3,26 @@
 
 #include "MessageHandlerBase.h"
 
+/** 
+* The update body type message handler. Will update a body type on the physics
+* system according to the given BodyID.
+*/
 class MessageHandler_UpdateBodyType : public MessageHandlerBase
 {
 public:
     /** 
-    * Adds a new sphere body to the physics system.
+    * Updates a body type on the physics system.
     * The message template should be:
     * 
     * "UpdateBodyType\n
-    * id; newBodyType\n
+    * id;newBodyType\n
     * MessageEnd\n"
     * 
     * @param message The received message from the client with the info to 
-    * create a new sphere body
+    * update the body type
     * 
-    * @return The result of adding a new sphere body. May return a failure 
-    * message if could not succesfully add the new sphere body on the physics 
+    * @return The result of updating the body type. May return a failure 
+    * message if could not successfully update the body type on the physics 
     * system
     */
     std::string handleMessage(std::string& message) override;

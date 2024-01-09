@@ -2,7 +2,8 @@
 
 std::string BodyRuntimeData::GetBodyTypeAsString()
 {
-    switch(bodyType)
+    // Switch on the current body type and return a string from the enum type
+    switch(currentBodyType)
     {
         case EBodyType::Primary:
             return "Primary";

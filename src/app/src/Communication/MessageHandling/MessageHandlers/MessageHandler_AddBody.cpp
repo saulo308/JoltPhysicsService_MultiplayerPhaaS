@@ -4,8 +4,8 @@
 /* 
 * Message template:
 *
-* "AddSphereBody\n
-* id; bodyType; posX; posY; posZ\n
+* "AddBody\n
+* actorType; id_0; bodyType; posX_0; posY_0; posZ_0\n
 * MessageEnd\n"
 *
 */

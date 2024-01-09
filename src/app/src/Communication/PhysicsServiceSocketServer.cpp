@@ -24,27 +24,27 @@ void PhysicsServiceSocketServer::RunDebugSimulation()
     // Register all handlers:
 
     // Register InitPhysicsSystem handler (message type: "Init")
-    physicsServiceMessageHandlerParser->register_handler
+    physicsServiceMessageHandlerParser->registerHandler
         <MessageHandler_InitPhysicsSystem>("Init", 
         physicsServiceImplementation);
 
     // Register InitPhysicsSystem handler (message type: "Step")
-    physicsServiceMessageHandlerParser->register_handler
+    physicsServiceMessageHandlerParser->registerHandler
         <MessageHandler_StepPhysicsSystem>("Step", 
         physicsServiceImplementation);
 
     // Register RemoveBody handler (message type: "RemoveBody")
-    physicsServiceMessageHandlerParser->register_handler
+    physicsServiceMessageHandlerParser->registerHandler
         <MessageHandler_RemoveBody>("RemoveBody", 
         physicsServiceImplementation);
     
     // Register AddBody handler (message type: "AddBody")
-    physicsServiceMessageHandlerParser->register_handler
+    physicsServiceMessageHandlerParser->registerHandler
         <MessageHandler_AddBody>("AddBody", 
         physicsServiceImplementation);
 
     // Register UpdateBodyType handler (message type: "UpdateBodyType")
-    physicsServiceMessageHandlerParser->register_handler
+    physicsServiceMessageHandlerParser->registerHandler
         <MessageHandler_UpdateBodyType>("UpdateBodyType", 
         physicsServiceImplementation);
         
@@ -155,27 +155,27 @@ bool PhysicsServiceSocketServer::OpenServerSocket(const char* serverPort)
     // Register all handlers:
 
     // Register InitPhysicsSystem handler (message type: "Init")
-    physicsServiceMessageHandlerParser->register_handler
+    physicsServiceMessageHandlerParser->registerHandler
         <MessageHandler_InitPhysicsSystem>("Init", 
         physicsServiceImplementation);
 
     // Register InitPhysicsSystem handler (message type: "Step")
-    physicsServiceMessageHandlerParser->register_handler
+    physicsServiceMessageHandlerParser->registerHandler
         <MessageHandler_StepPhysicsSystem>("Step", 
         physicsServiceImplementation);
 
     // Register REmoveBody handler (message type: "RemoveBody")
-    physicsServiceMessageHandlerParser->register_handler
+    physicsServiceMessageHandlerParser->registerHandler
         <MessageHandler_RemoveBody>("RemoveBody", 
         physicsServiceImplementation);
 
     // Register AddBody handler (message type: "AddBody")
-    physicsServiceMessageHandlerParser->register_handler
+    physicsServiceMessageHandlerParser->registerHandler
         <MessageHandler_AddBody>("AddBody", 
         physicsServiceImplementation);
-        
+
     // Register UpdateBodyType handler (message type: "UpdateBodyType")
-    physicsServiceMessageHandlerParser->register_handler
+    physicsServiceMessageHandlerParser->registerHandler
         <MessageHandler_UpdateBodyType>("UpdateBodyType", 
         physicsServiceImplementation);
 

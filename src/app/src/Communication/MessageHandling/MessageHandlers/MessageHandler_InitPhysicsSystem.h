@@ -3,6 +3,10 @@
 
 #include "MessageHandlerBase.h"
 
+/** 
+* The init physics system message handler. Will initialize the physics system
+* according to the given message with the initialization info.
+*/
 class MessageHandler_InitPhysicsSystem : public MessageHandlerBase
 {
 public:
@@ -21,7 +25,8 @@ public:
     * @param message The received message from the client with the physics
     * system initialization system
     * 
-    * @return 
+    * @return The result of initializing the physics system. May return an
+    * error
     */
     std::string handleMessage(std::string& message) override;
 };

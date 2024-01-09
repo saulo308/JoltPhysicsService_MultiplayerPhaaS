@@ -256,12 +256,6 @@ std::string PhysicsServiceImpl::StepPhysicsSimulation()
 			else
 				body.SetLinearVelocity(Vec3(0.f, -300.f, 0.f));
 
-			/*
-			uint64_t bodyRuntimeDataAddress = body.GetUserData();
-			BodyRuntimeData* bodyRuntimeData = 
-				reinterpret_cast<BodyRuntimeData*>(bodyRuntimeDataAddress);
-			bodyRuntimeData->runtimeBodyType;*/	
-
 			lockWrite.ReleaseLock();
 		}
 	}
@@ -383,7 +377,7 @@ std::string PhysicsServiceImpl::AddNewSphereToPhysicsWorld
 	auto newBodyRuntimeData = new BodyRuntimeData();
 
 	// Set the new body type
-	newBodyRuntimeData->bodyType = newBodyType;
+	newBodyRuntimeData->SetBodyType(newBodyType);
 
 	// Cast to a uint64_t so we can store it on user data
 	uint64_t bodyRuntimeDataAsInt = reinterpret_cast<uint64_t>
@@ -400,7 +394,7 @@ std::string PhysicsServiceImpl::AddNewSphereToPhysicsWorld
 	body_interface->AddBody(newSphereBody->GetID(), EActivation::Activate);
 
 	std::cout << "New sphere body created and added to physics system "
-		"succesfully.\n";
+		"successfully.\n";
 	return "New sphere body created successfully.";
 }
 
@@ -429,7 +423,7 @@ std::string PhysicsServiceImpl::AddNewFloorToPhysicsSystem
 	// Note that if we run out of bodies this can return nullptr
 	Body* floor = body_interface->CreateBodyWithID(newBodyId, floor_settings); 
 
-	// Check if floor was created successfuly
+	// Check if floor was created successfully
 	if(!floor)
 	{
 		std::string creationErrorString = "Fail in creation of body with ID: " 
@@ -445,7 +439,7 @@ std::string PhysicsServiceImpl::AddNewFloorToPhysicsSystem
 	body_interface->AddBody(floor->GetID(), EActivation::DontActivate);
 
 	std::cout << "New floor body created and added to physics system "
-		"succesfully.\n";
+		"successfully.\n";
 	return "New floor body created successfully.";
 }
 
@@ -491,12 +485,12 @@ std::string PhysicsServiceImpl::UpdateBodyType(BodyID bodyIdToUpdate,
 			reinterpret_cast<BodyRuntimeData *>(bodyRuntimeDataAddress);
 
 		// Update the body type
-		bodyRuntimeData->UpdateBodyType(newBodyType);
+		bodyRuntimeData->SetBodyType(newBodyType);
 
 		lockWrite.ReleaseLock();
 	}
 
-	return "Body type updated successfuly.";
+	return "Body type updated successfully.";
 }
 
 void PhysicsServiceImpl::ClearPhysicsSystem()

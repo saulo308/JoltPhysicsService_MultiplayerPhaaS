@@ -77,7 +77,7 @@ public:
     * physics world
     * 
     * @return The result of the sphere's addition. May return a failure message
-    * if the sphere could not be added succesfully
+    * if the sphere could not be added successfully
     */
     std::string AddNewSphereToPhysicsWorld(BodyID newBodyId, EBodyType
         newBodyType, RVec3 newBodyInitialPosition);
@@ -92,7 +92,7 @@ public:
     * physics world
     * 
     * @return The result of the floor's addition. May return a failure message
-    * if the floor could not be added succesfully
+    * if the floor could not be added successfully
     */
     std::string AddNewFloorToPhysicsSystem(const BodyID newBodyId, 
         const RVec3 newBodyInitialPosition);
@@ -105,11 +105,19 @@ public:
     * physics world
     * 
     * @return The result of the body's removal. May return a failure message
-    * if the body could not be removed succesfully
+    * if the body could not be removed successfully
     */
     std::string RemoveBodyByID(const BodyID bodyToRemoveID);
 
-    /** */
+    /** 
+    * Updates a given body type. The parameters should give the BodyID from 
+    * the target body and the new body type.
+    * 
+    * @param bodyIdToUpdate The BodyID from the target body to update its type
+    * @param newBodyType The new body type to set on the target body
+    * 
+    * @return The result to the body type update.
+    */
     std::string UpdateBodyType(BodyID bodyIdToUpdate, EBodyType newBodyType);
 
 private:
@@ -196,10 +204,6 @@ public:
     * increases at each step physics call.
     */
     std::uint32_t stepPhysicsCounter = 0;
-
-private:
-    /** */
-    Array<StateRecorderImpl> mPlaybackFrames;	
 };
 
 #endif

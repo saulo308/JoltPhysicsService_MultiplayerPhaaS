@@ -5,7 +5,7 @@
 * Message template:
 *
 "UpdateBodyType\n
-*id; newBodyType\n
+*id;newBodyType\n
 *MessageEnd\n"
 *
 */

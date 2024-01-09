@@ -3,6 +3,10 @@
 
 #include "MessageHandlerBase.h"
 
+/** 
+* The remove body message handler. Will remove a body according to the given
+* BodyID from the physics system.
+*/
 class MessageHandler_RemoveBody : public MessageHandlerBase
 {
 public:
@@ -18,7 +22,7 @@ public:
     * remove the body
     * 
     * @return The result of removing a body. May return a failure message if 
-    * could not successfuly remove the body from the physics system
+    * could not successfully remove the body from the physics system
     */
     std::string handleMessage(std::string& message) override;
 };

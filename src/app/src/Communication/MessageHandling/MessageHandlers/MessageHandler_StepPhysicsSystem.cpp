@@ -4,7 +4,8 @@
 /* 
 * Message template:
 *
-* "Step\n"
+* "Step\n
+* MessageEnd\n"
 *
 */
 std::string MessageHandler_StepPhysicsSystem::handleMessage

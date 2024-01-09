@@ -3,6 +3,12 @@
 
 #include "MessageHandlerBase.h"
 
+/** 
+* The step physics system message handler. Will step the physics system and 
+* return the physics system new state after the step. This will send each 
+* actor's Id, position and rotation of the current physics system state back to
+* the client.
+*/
 class MessageHandler_StepPhysicsSystem : public MessageHandlerBase
 {
 public:

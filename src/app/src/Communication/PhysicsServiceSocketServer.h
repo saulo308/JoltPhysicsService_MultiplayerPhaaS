@@ -37,7 +37,7 @@ public:
     * 
     * @param serverPort The port to open the server on
     * 
-    * @return True if could succesfully open the socket on the given port and
+    * @return True if could successfully open the socket on the given port and
     * false otherwise.
     */
     bool OpenServerSocket(const char* serverPort);
@@ -98,7 +98,7 @@ private:
     * @param clientSocket The connected client's socket to send the message to
     * @param messageToSend The message to send the client
     * 
-    * @return True if could succesfully send the message to the client and
+    * @return True if could successfully send the message to the client and
     * false otherwise
     */
     bool SendMessageToClient(int clientSocket, std::string& messageToSend);
@@ -114,7 +114,9 @@ private:
     PhysicsServiceImpl* physicsServiceImplementation = nullptr;
 
     /** 
-    *
+    * The physics service message handler parser. This class is responsible
+    * for interperting and handling the incoming messages. Will call the proper 
+    * functionality.
     */
     class MessageHandlerParser* physicsServiceMessageHandlerParser = nullptr;
 
