@@ -367,9 +367,6 @@ std::string PhysicsServiceImpl::AddNewSphereToPhysicsWorld
 	{
 		std::string creationErrorString = "Fail in creation of body with ID: " 
 			+ std::to_string(newBodyId.GetIndexAndSequenceNumber()) + '\n';
-
-		std::cout << creationErrorString;
-
 		return creationErrorString;
 	}
 
@@ -393,8 +390,6 @@ std::string PhysicsServiceImpl::AddNewSphereToPhysicsWorld
 	// Add the new sphere to the world
 	body_interface->AddBody(newSphereBody->GetID(), EActivation::Activate);
 
-	std::cout << "New sphere body created and added to physics system "
-		"successfully.\n";
 	return "New sphere body created successfully.";
 }
 
@@ -438,8 +433,6 @@ std::string PhysicsServiceImpl::AddNewFloorToPhysicsSystem
 	// Add it to the world
 	body_interface->AddBody(floor->GetID(), EActivation::DontActivate);
 
-	std::cout << "New floor body created and added to physics system "
-		"successfully.\n";
 	return "New floor body created successfully.";
 }
 
@@ -458,8 +451,9 @@ std::string PhysicsServiceImpl::RemoveBodyByID(const BodyID bodyToRemoveID)
 	BodyIdList.erase(std::remove(BodyIdList.begin(), BodyIdList.end(), 
 		bodyToRemoveID), BodyIdList.end());
 
-	// Remove the body by its ID
+	// Remove the body by its ID and destroy it
 	body_interface->RemoveBody(bodyToRemoveID);
+	body_interface->DestroyBody(bodyToRemoveID);
 
 	return "Body removal processed successfully";
 }
