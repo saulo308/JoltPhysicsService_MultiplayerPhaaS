@@ -1,4 +1,6 @@
 #include "PhysicsServiceImpl.h"
+#include <ctime>
+#include <cstdlib>
 
 void PhysicsServiceImpl::InitPhysicsSystem
 	(const std::string initializationActorsInfo)
@@ -205,6 +207,9 @@ void PhysicsServiceImpl::InitPhysicsSystem
 		}
 	}
 
+	// Seed the random number generator with the current time
+	srand(static_cast<unsigned int>(time(0)));
+
 	// Optional step: Before starting the physics simulation you can optimize 
 	// the broad phase. This improves collision detection performance 
 	// (it's pointless here because we only have 2 bodies).
@@ -244,21 +249,42 @@ std::string PhysicsServiceImpl::StepPhysicsSimulation()
 	std::string stepPhysicsResponse = "";
 
 	// Foreach body:
+	/*		
 	for(auto& bodyId : BodyIdList)
 	{
+
 		BodyLockWrite lockWrite(physics_system->GetBodyLockInterface(), 
 			bodyId);
 		if(lockWrite.Succeeded())
 		{
+			
+			// Seed the random number generator with the current time
+			srand(static_cast<unsigned int>(time(0)));
+
+			// Use a hash function to map the ID to a random seed
+			size_t hashValue = std::hash<int>{}(bodyId.GetIndex());
+
+			// Seed the random number generator with the hash value
+			srand(static_cast<unsigned int>(hashValue));
+
+			// Generate a random number between 0 and 3
+			int randomNum = rand() % 4;
+
 			Body& body = lockWrite.GetBody();
-			if(bodyId.GetIndex() % 2 == 0)
+			if(randomNum == 0)
 				body.SetLinearVelocity(Vec3(0.f, 300.f, 0.f));
+			else if (randomNum == 1)
+				body.SetLinearVelocity(Vec3(300.f, 0.0f, 0.f));
+			else if (randomNum == 2)
+				body.SetLinearVelocity(Vec3(0.0f, -300.f, 0.f));
 			else
-				body.SetLinearVelocity(Vec3(0.f, -300.f, 0.f));
+				body.SetLinearVelocity(Vec3(-300.f, 0.0f, 0.f));
+			
 
 			lockWrite.ReleaseLock();
 		}
 	}
+	*/
 
 	// Step the world
 	std::cout << "Stepping physics...\n";
@@ -297,6 +323,23 @@ std::string PhysicsServiceImpl::StepPhysicsSimulation()
 
 		// Append the the body's physics rotation result
 		bodyStepResultInfo += actorStepPhysicsRotationResult + '\n';
+
+		// Get the linear and angular velocity
+		const auto linearVelocity { body_interface->GetLinearVelocity(bodyId) };
+		const auto angularVelocity 
+			{ body_interface->GetAngularVelocity(bodyId) };
+
+		// Create the velocities string
+		const std::string actorStepPhysicsVelocitiesResult = 
+			std::to_string(linearVelocity.GetX()) + ";"
+			+ std::to_string(linearVelocity.GetY()) + ";" 
+			+ std::to_string(linearVelocity.GetZ()) + ";" 
+			+ std::to_string(angularVelocity.GetX()) + ";" 
+			+ std::to_string(angularVelocity.GetY()) + ";" 
+			+ std::to_string(angularVelocity.GetZ()); 
+
+		// Append the the body's physics velocity result
+		bodyStepResultInfo += actorStepPhysicsVelocitiesResult + '\n';
 
 		// Create the bodyType variable
 		std::string bodyTypeAsString {};
@@ -356,6 +399,7 @@ std::string PhysicsServiceImpl::AddNewSphereToPhysicsWorld
 
 	// Set the sphere's restitution 
 	sphere_settings.mRestitution = 1.f;
+	sphere_settings.mMassPropertiesOverride.mMass = 10.f;
 
 	// Create the actual rigid body
 	// Note that if we run out of bodies this can return nullptr
@@ -428,7 +472,7 @@ std::string PhysicsServiceImpl::AddNewFloorToPhysicsSystem
 
 	// Set the floor's friction and add a small rotation on y-axis
     floor->SetFriction(1.0f);
-	floor->AddRotationStep(RVec3(0.f, -0.01f, 0.f));
+	//floor->AddRotationStep(RVec3(0.f, -0.01f, 0.f));
 
 	// Add it to the world
 	body_interface->AddBody(floor->GetID(), EActivation::DontActivate);

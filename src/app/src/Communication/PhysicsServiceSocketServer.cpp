@@ -84,7 +84,7 @@ void PhysicsServiceSocketServer::RunDebugSimulation()
     std::cout << "Steping physics...\n";
 
     // Execute 30 physics steps
-    for(int i = 0; i < 5; i++)
+    for(int i = 0; i < 20; i++)
     { 
         std::string stepPhysicsSystemMessage = "Step\nMessageEnd\n";
 
