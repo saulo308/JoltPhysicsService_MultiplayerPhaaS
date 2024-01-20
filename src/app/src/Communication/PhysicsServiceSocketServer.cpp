@@ -70,7 +70,7 @@ void PhysicsServiceSocketServer::RunDebugSimulation()
     // 1 should not exist and the bodyID 4 should)
     std::string addBodyMessage = 
         "AddBody\n"
-        "sphere;4;primary;0;0;250\n"
+        "sphere;4;primary;0;0;250;0;0;0;0;0;0\n"
         "MessageEnd\n";
     physicsServiceMessageHandlerParser->handleMessage(addBodyMessage);
 
