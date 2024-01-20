@@ -37,16 +37,19 @@ std::string MessageHandler_AddBody::handleMessage
 	}
 
     // Check for errors
-    if (newSphereBodyParsedData.size() < 6)
+    if (newSphereBodyParsedData.size() < 12)
     {
         std::cout << "Error on parsing addBody message info. Line with less "
-            "than 6 params: " << message << '\n';
+            "than 12 params: " << message << '\n';
         return "Error on parsing addBody message info. Line with less "
-            "than 6 params.";
+            "than 12 params.";
     }
 
     // Get the new sphere body's ID
 	const int newSphereId { std::stoi(newSphereBodyParsedData[1]) };
+
+    // Create data for sphere creation
+    const BodyID newSphereBodyID(newSphereId);
 
     // Get the new body type
 	const std::string newSphereBodyTypeAsString
@@ -71,14 +74,38 @@ std::string MessageHandler_AddBody::handleMessage
 	const double initialPosY { std::stod(newSphereBodyParsedData[4]) };
 	const double initialPosZ { std::stod(newSphereBodyParsedData[5]) };
 
-    // Create data for sphere creation
-    const BodyID newSphereBodyID(newSphereId);
+    // Create the new sphere initial pos
     const RVec3 newSphereInitialPos(initialPosX, initialPosY, initialPosZ);
+
+    // Get the new sphere body's linear velocity
+	const double initalLinearVelocityX 
+        { std::stod(newSphereBodyParsedData[6]) };
+	const double initalLinearVelocityY 
+        { std::stod(newSphereBodyParsedData[7]) };
+	const double initalLinearVelocityZ 
+        { std::stod(newSphereBodyParsedData[8]) };
+
+    // Create the new sphere linear velocity
+    const RVec3 newSphereLinearVelocty(initalLinearVelocityX, 
+        initalLinearVelocityY, initalLinearVelocityZ);
+    
+    // Get the new sphere body's linear velocity
+	const double initalAngularVelocityX 
+        { std::stod(newSphereBodyParsedData[9]) };
+	const double initalAngularVelocityY 
+        { std::stod(newSphereBodyParsedData[10]) };
+	const double initalAngularVelocityZ 
+        { std::stod(newSphereBodyParsedData[11]) };
+
+    // Create the new sphere linear velocity
+    const RVec3 newSphereAngularVelocity(initalAngularVelocityX, 
+        initalAngularVelocityY, initalAngularVelocityZ);
 
     // Request the creation of sphere
     std::string additionReturn = 
         physicsServiceImplementation->AddNewSphereToPhysicsWorld
-        (newSphereBodyID, newBodyType, newSphereInitialPos);
+        (newSphereBodyID, newBodyType, newSphereInitialPos, 
+        newSphereLinearVelocty, newSphereAngularVelocity);
 
     std::cout << additionReturn << "\n\n";
     return additionReturn;

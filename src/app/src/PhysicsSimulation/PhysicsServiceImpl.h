@@ -80,7 +80,9 @@ public:
     * if the sphere could not be added successfully
     */
     std::string AddNewSphereToPhysicsWorld(BodyID newBodyId, EBodyType
-        newBodyType, RVec3 newBodyInitialPosition);
+        newBodyType, RVec3 newBodyInitialPosition, 
+        RVec3 newBodyInitialLinearVelocity, 
+        RVec3 newBodyInitialAngularVelocity);
 
     /** 
     * Adds a new floor to the physics world. This will add a Body to the 

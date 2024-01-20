@@ -202,7 +202,7 @@ void PhysicsServiceImpl::InitPhysicsSystem
 		{
 			// Add new sphere to the physics world
 			AddNewSphereToPhysicsWorld(newBodyID, newBodyType, 
-				bodyInitialPosition);
+				bodyInitialPosition, RVec3(), RVec3());
 			continue;
 		}
 	}
@@ -322,7 +322,7 @@ std::string PhysicsServiceImpl::StepPhysicsSimulation()
 			+ std::to_string(rotation.GetZ());
 
 		// Append the the body's physics rotation result
-		bodyStepResultInfo += actorStepPhysicsRotationResult + '\n';
+		bodyStepResultInfo += actorStepPhysicsRotationResult + ";";
 
 		// Get the linear and angular velocity
 		const auto linearVelocity { body_interface->GetLinearVelocity(bodyId) };
@@ -381,7 +381,8 @@ std::string PhysicsServiceImpl::StepPhysicsSimulation()
 }
 
 std::string PhysicsServiceImpl::AddNewSphereToPhysicsWorld
-	(BodyID newBodyId, EBodyType newBodyType, RVec3 newBodyInitialPosition)
+	(BodyID newBodyId, EBodyType newBodyType, RVec3 newBodyInitialPosition,
+    RVec3 newBodyInitialLinearVelocity, RVec3 newBodyInitialAngularVelocity)
 {
 	std::cout << "NewSphere addition to physics world requested.\n";
 
@@ -428,8 +429,11 @@ std::string PhysicsServiceImpl::AddNewSphereToPhysicsWorld
 	// Add the body's ID to the list of IDs
 	BodyIdList.push_back(newBodyId);
 
-	// Testing a small velocity on Y-axis
-	//newSphereBody->SetLinearVelocity(Vec3Arg(0.f, 1000.f, 0.f));
+	// Set the body's linear velocity
+	newSphereBody->SetLinearVelocity(newBodyInitialLinearVelocity);
+
+	// Set the body's angular velocity
+	newSphereBody->SetAngularVelocity(newBodyInitialAngularVelocity);
 
 	// Add the new sphere to the world
 	body_interface->AddBody(newSphereBody->GetID(), EActivation::Activate);
