@@ -169,6 +169,8 @@ add_executable(JoltService "../src/JoltService.cpp"
 "../src/Communication/MessageHandling/MessageHandlers/MessageHandler_AddBody.cpp"
 "../src/Communication/MessageHandling/MessageHandlers/MessageHandler_UpdateBodyType.h"
 "../src/Communication/MessageHandling/MessageHandlers/MessageHandler_UpdateBodyType.cpp"
+"../src/Communication/MessageHandling/MessageHandlers/MessageHandler_GetSimulationMeasures.h"
+"../src/Communication/MessageHandling/MessageHandlers/MessageHandler_GetSimulationMeasures.cpp"
 "../src/Communication/PhysicsServiceSocketServer.h"
 "../src/Communication/PhysicsServiceSocketServer.cpp")
 

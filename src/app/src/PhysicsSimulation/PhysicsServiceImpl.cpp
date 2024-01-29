@@ -219,6 +219,9 @@ void PhysicsServiceImpl::InitPhysicsSystem
 	// keep the broad phase efficient.
 	//physics_system->OptimizeBroadPhase();
 
+	// Reset the step physics time measurement 
+    physicsStepSimulationTimeMeasure = "";
+
 	bIsInitialized = true;
 
     std::cout << "Physics world has been initialized and is running.\n";
@@ -226,12 +229,6 @@ void PhysicsServiceImpl::InitPhysicsSystem
 
 std::string PhysicsServiceImpl::StepPhysicsSimulation()
 {
-	// Record the state prior to the step
-	//mPlaybackFrames.push_back(StateRecorderImpl());
-	//SaveState(mPlaybackFrames.back());
-
-	//std::cout << "Size: " << mPlaybackFrames.size() << '\n';
-
 	// If you take larger steps than 1 / 60th of a second you need to do 
 	// multiple collision steps in order to keep the simulation stable. 
 	// Do 1 collision step per 1 / 60th of a second (round up).
@@ -286,11 +283,29 @@ std::string PhysicsServiceImpl::StepPhysicsSimulation()
 	}
 	*/
 
+    // Get pre step physics time
+    std::chrono::steady_clock::time_point preStepPhysicsTime = 
+		std::chrono::steady_clock::now();
+
 	// Step the world
 	std::cout << "Stepping physics...\n";
 	physics_system->Update(cDeltaTime, cCollisionSteps, cIntegrationSubSteps, 
 		temp_allocator, job_system);
 	std::cout << "Physics stepping finished.\n";
+
+    // Get post physics communication time
+    std::chrono::steady_clock::time_point postStepPhysicsTime = 
+		std::chrono::steady_clock::now();
+
+    // Calculate the microsseconds all step physics simulation
+    // (considering communication )took
+    std::stringstream ss;
+    ss << std::chrono::duration_cast<std::chrono::microseconds>
+		(postStepPhysicsTime - preStepPhysicsTime).count();
+    const std::string elapsedTime = ss.str();
+
+    // Append the delta time to the current step measurement
+    physicsStepSimulationTimeMeasure += elapsedTime + "\n";
 
 	std::cout << "(Step:" << stepPhysicsCounter++ << ")\n";
 
@@ -567,4 +582,9 @@ void PhysicsServiceImpl::ClearPhysicsSystem()
 	bIsInitialized = false;
 
     std::cout << "Physics system was cleared. Exiting process...\n";
+}
+
+std::string PhysicsServiceImpl::GetSimulationMeasures() const
+{
+	return physicsStepSimulationTimeMeasure;
 }

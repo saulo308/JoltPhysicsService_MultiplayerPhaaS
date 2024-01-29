@@ -99,6 +99,9 @@ public:
     std::string AddNewFloorToPhysicsSystem(const BodyID newBodyId, 
         const RVec3 newBodyInitialPosition);
     
+    /** */
+    std::string GetSimulationMeasures() const;
+
     /** 
     * Removes a Body from the current running physics world. Thus, this body
     * will be removed from the simulation
@@ -206,6 +209,12 @@ public:
     * increases at each step physics call.
     */
     std::uint32_t stepPhysicsCounter = 0;
+
+    /** 
+    * The current physics step time measure without communication overhead.
+    * Used to test the overall system
+    */
+	std::string physicsStepSimulationTimeMeasure = "";
 };
 
 #endif

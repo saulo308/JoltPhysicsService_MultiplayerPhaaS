@@ -5,6 +5,7 @@
 #include "../Communication/MessageHandling/MessageHandlers/MessageHandler_RemoveBody.h"
 #include "../Communication/MessageHandling/MessageHandlers/MessageHandler_AddBody.h"
 #include "../Communication/MessageHandling/MessageHandlers/MessageHandler_UpdateBodyType.h"
+#include "../Communication/MessageHandling/MessageHandlers/MessageHandler_GetSimulationMeasures.h"
 #include <sstream>
 #include <chrono>
 #include <fstream>
@@ -46,6 +47,12 @@ void PhysicsServiceSocketServer::RunDebugSimulation()
     // Register UpdateBodyType handler (message type: "UpdateBodyType")
     physicsServiceMessageHandlerParser->registerHandler
         <MessageHandler_UpdateBodyType>("UpdateBodyType", 
+        physicsServiceImplementation);
+
+    // Register GetSimulationMeasures handler (message type: 
+    // "GetSimulationMeasures")
+    physicsServiceMessageHandlerParser->registerHandler
+        <MessageHandler_GetSimulationMeasures>("GetSimulationMeasures", 
         physicsServiceImplementation);
         
     // Initializing physics system with two spheres and a floor 
@@ -93,6 +100,15 @@ void PhysicsServiceSocketServer::RunDebugSimulation()
             physicsServiceMessageHandlerParser->handleMessage
             (stepPhysicsSystemMessage);
     }
+
+    std::cout << "Getting measures...\n";
+
+    // Testing the get simulation measures message
+    std::string getSimulationMeasuresMessage = 
+        "GetSimulationMeasures\n"
+        "MessageEnd\n";
+    physicsServiceMessageHandlerParser->handleMessage
+        (getSimulationMeasuresMessage);
 }
 
 bool PhysicsServiceSocketServer::OpenServerSocket(const char* serverPort)
@@ -145,8 +161,8 @@ bool PhysicsServiceSocketServer::OpenServerSocket(const char* serverPort)
     // client socket)
     close(serverListenSocket);
 
+    // Create a new physics service implementation object
     physicsServiceImplementation = new PhysicsServiceImpl();
-    currentPhysicsStepSimulationWithoutCommsTimeMeasure = "";
 
     // Create the physics service message handler parser to parse and
     // delegate incoming messages
@@ -177,6 +193,12 @@ bool PhysicsServiceSocketServer::OpenServerSocket(const char* serverPort)
     // Register UpdateBodyType handler (message type: "UpdateBodyType")
     physicsServiceMessageHandlerParser->registerHandler
         <MessageHandler_UpdateBodyType>("UpdateBodyType", 
+        physicsServiceImplementation);
+
+    // Register GetSimulationMeasures handler (message type: 
+    // "GetSimulationMeasures")
+    physicsServiceMessageHandlerParser->registerHandler
+        <MessageHandler_GetSimulationMeasures>("GetSimulationMeasures", 
         physicsServiceImplementation);
 
     // Receive messages until the peer shuts down the connection
@@ -232,9 +254,6 @@ bool PhysicsServiceSocketServer::OpenServerSocket(const char* serverPort)
             decodedMessage = "";
         }
     } while (messageReceivalReturnValue > 0);
-
-    // Save step physics measurement to file
-    SaveStepPhysicsMeasureToFile();
 
     // shutdown the connection since we're done
     const int shutdownResult = shutdown(clientSocket, SHUT_RDWR);
@@ -380,32 +399,4 @@ bool PhysicsServiceSocketServer::SendMessageToClient(int clientSocket,
     printf("Message sent: %s\n", messageBuffer);
     printf("Bytes sent: %ld\n", sendReturnValue);
     return true;
-}
-
-void PhysicsServiceSocketServer::SaveStepPhysicsMeasureToFile()
-{
-    std::string directoryName = "StepPhysicsMeasure";
-
-    // Create the directory
-    fs::create_directory(directoryName);
-
-    std::string fileName = 
-        "/StepPhysicsMeasureWithoutCommsOverhead_Remote_Spheres_.txt";
-    std::string fullPath = directoryName + "/" + fileName;
-
-    // Open the file in output mode
-    std::ofstream file(fullPath);
-    
-    // Check if the file was opened successfully
-    if (file.is_open()) 
-    { 
-        // Write the string to the file
-        file << currentPhysicsStepSimulationWithoutCommsTimeMeasure; 
-        file.close(); // Close the file
-        std::cout << "Data written to file successfully." << std::endl;
-    } 
-    else 
-    {
-        std::cout << "Failed to open the file." << std::endl;
-    }
 }
