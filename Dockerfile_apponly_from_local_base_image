@@ -13,4 +13,6 @@ RUN ./cmake_linux_clang_gcc.sh Distribution
 WORKDIR $HOME/app/build/Linux_Distribution
 RUN make -j 4
 
+RUN chmod +x JoltService
+
 CMD ["./JoltService"]

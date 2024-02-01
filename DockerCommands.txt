@@ -42,7 +42,6 @@ docker run -d -p 27015:27015 --name physics-service saulo308/jolt-physics-servic
 2. DISM /Online /Enable-Feature:Microsoft-Hyper-V /All
 3. shutdown -s -t 2
 
-
 ==== Pushing and pulling from docker hub
 => Login:
 docker login
@@ -52,3 +51,14 @@ docker push saulo308/jolt-physics-service:latest
 
 => Pulling:
 docker pull saulo308/jolt-physics-service:latest
+
+
+== New commands
+
+== Run container
+sudo docker run -d -p 27015:27015 saulo308/jolt-physics-service-3:latest ./JoltService 27015
+
+== Remove containers
+sudo docker stop $(sudo docker ps -aq)
+sudo docker rm $(sudo docker ps -aq)
+
